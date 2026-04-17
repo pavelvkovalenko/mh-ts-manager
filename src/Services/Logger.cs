@@ -52,7 +52,11 @@ public sealed class Logger : IDisposable
         }
     }
 
-    private Logger(string logDirectory)
+    /// <summary>
+    /// Приватный конструктор для создания экземпляра логгера.
+    /// </summary>
+    /// <param name="logDirectory">Директория для логов.</param>
+    internal Logger(string logDirectory)
     {
         _logDirectory = logDirectory;
         InitializeDirectory();
