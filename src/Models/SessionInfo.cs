@@ -1,4 +1,5 @@
-namespace MhTsManager.Models;
+namespace MhTsManager.Models
+{
 
 /// <summary>
 /// Состояние пользовательской сессии (аналог WTS_CONNECTSTATE_CLASS).
@@ -105,4 +106,5 @@ public sealed record SessionInfo
             return $"{UserName} \u2014 {name} ({ApplicationCount}){separator}{icons}";
         }
     }
+}
 }

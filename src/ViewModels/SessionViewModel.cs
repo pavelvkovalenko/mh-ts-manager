@@ -4,7 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using MhTsManager.Models;
 using MhTsManager.Services;
 
-namespace MhTsManager.ViewModels;
+namespace MhTsManager.ViewModels
+{
 
 /// <summary>
 /// ViewModel одной пользовательской сессии.
@@ -178,4 +179,5 @@ public sealed partial class SessionViewModel : ObservableObject
     {
         SessionInfo = newInfo;
     }
+}
 }

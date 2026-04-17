@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Интерфейс безопасного исполнителя внешних команд (mstsc, msg, tscon).
@@ -205,4 +206,5 @@ public sealed class CommandExecutor : ICommandExecutor
             return false;
         }
     }
+}
 }

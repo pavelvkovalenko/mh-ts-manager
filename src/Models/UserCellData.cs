@@ -1,4 +1,5 @@
-namespace MhTsManager.Models;
+namespace MhTsManager.Models
+{
 
 /// <summary>
 /// Данные для композитной ячейки «Пользователь» в таблице сессий.
@@ -62,4 +63,5 @@ public sealed record UserCellData
     /// Tooltip при наведении на счётчик приложений.
     /// </summary>
     public string AppCountTooltip => $"Приложений в сессии: {AppCount}";
+}
 }

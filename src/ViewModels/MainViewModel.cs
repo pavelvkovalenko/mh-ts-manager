@@ -4,7 +4,8 @@ using CommunityToolkit.Mvvm.Input;
 using MhTsManager.Models;
 using MhTsManager.Services;
 
-namespace MhTsManager.ViewModels;
+namespace MhTsManager.ViewModels
+{
 
 /// <summary>
 /// Главный ViewModel приложения.
@@ -292,4 +293,5 @@ public sealed partial class MainViewModel : ObservableObject
     {
         StopRefreshLoop();
     }
+}
 }

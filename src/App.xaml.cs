@@ -3,7 +3,8 @@ using MhTsManager.Services;
 using MhTsManager.ViewModels;
 using MhTsManager.Views;
 
-namespace MhTsManager;
+namespace MhTsManager
+{
 
 /// <summary>
 /// Точка входа приложения. Настраивает DI, сервисы, запускает главное окно.
@@ -136,4 +137,5 @@ public partial class App : Application
 
         MessageBox.Show(help, "Справка", MessageBoxButton.OK, MessageBoxImage.Information);
     }
+}
 }

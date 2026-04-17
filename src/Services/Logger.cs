@@ -1,6 +1,7 @@
 using System.Text;
 
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Уровень логирования.
@@ -285,4 +286,5 @@ public sealed class Logger : IDisposable
     {
         _instance = null;
     }
+}
 }

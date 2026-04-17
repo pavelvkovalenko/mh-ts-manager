@@ -3,7 +3,8 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using MhTsManager.Models;
 
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Интерфейс сервиса работы с пользовательскими сессиями через WTS API.
@@ -517,4 +518,5 @@ public sealed class WtsSessionService : IWtsSessionService
             return false;
         }
     }
+}
 }

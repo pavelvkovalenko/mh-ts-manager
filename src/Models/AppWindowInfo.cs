@@ -1,4 +1,5 @@
-namespace MhTsManager.Models;
+namespace MhTsManager.Models
+{
 
 /// <summary>
 /// DTO информации об окне приложения (видимом в Alt+Tab).
@@ -35,4 +36,5 @@ public sealed record AppWindowInfo
             return $"\uD83E\uDE9F {Title}";
         }
     }
+}
 }

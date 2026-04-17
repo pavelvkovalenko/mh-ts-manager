@@ -1,4 +1,5 @@
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Интерфейс сервиса локализации.
@@ -172,4 +173,5 @@ public sealed class LocalizationService : ILocalizationService
             ["ContextMenu.SendMessage"] = "Send Message...",
         };
     }
+}
 }
