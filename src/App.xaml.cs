@@ -1,4 +1,5 @@
 using System.Windows;
+using System.IO;
 using MhTsManager.Services;
 using MhTsManager.ViewModels;
 using MhTsManager.Views;
@@ -74,6 +75,7 @@ public partial class App : Application
             wtsService,
             appStateService,
             commandExecutor,
+            windowEnumerator,
             localizationService,
             settingsService,
             _logger);
