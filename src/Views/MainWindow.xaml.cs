@@ -20,8 +20,8 @@ namespace MhTsManager.Views
         public MainWindow(MainViewModel viewModel, Logger logger)
         {
             InitializeComponent();
-            _viewModel = viewModel;
-            _logger = logger;
+            _viewModel = viewModel!;
+            _logger = logger!;
             DataContext = _viewModel;
 
             // Привязка Title к ViewModel
