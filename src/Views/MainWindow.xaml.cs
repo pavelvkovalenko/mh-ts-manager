@@ -48,7 +48,7 @@ namespace MhTsManager.Views
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        LoadingIndicator.Visibility = (_viewModel is not null && _viewModel.IsLoading) ? Visibility.Visible : Visibility.Collapsed;
+                        LoadingIndicator.Visibility = _viewModel.IsLoading ? Visibility.Visible : Visibility.Collapsed;
                     });
                 }
             };
