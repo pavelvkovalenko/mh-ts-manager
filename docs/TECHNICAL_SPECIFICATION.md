@@ -1,8 +1,8 @@
-# ТЕХНИЧЕСКОЕ ЗАДАНИЕ (ТЗ)  
-**Диспетчер пользовательских сессий**  
-*Версия документа: 1.2.0*  
-*Платформа: Windows 10/11 (x64) только*  
-*Исполняемый файл: `mh-ts-manager.exe`*  
+# ТЕХНИЧЕСКОЕ ЗАДАНИЕ (ТЗ)
+**Диспетчер пользовательских сессий**
+*Версия документа: 1.4.0*
+*Платформа: Windows 10/11 (x64) только*
+*Исполняемый файл: `mh-ts-manager.exe`*
 *Лицензия: Проприетарная / По соглашению*
 
 ---
@@ -24,6 +24,8 @@
 | **1.0.0** | Апрель 2026 | Коваленко П. | Первоначальная версия ТЗ |
 | **1.1.0** | Апрель 2026 | Коваленко П. | Добавлен формат ячейки «Пользователь», уточнены столбцы, статусы сессий |
 | **1.2.0** | Апрель 2026 | Коваленко П. | Установлено имя исполняемого файла `mh-ts-manager.exe`, обновлены пути и структура |
+| **1.3.0** | Апрель 2026 | Коваленко П. | Добавлены лучшие практики из mh-compressor-manager: безопасность, RAII, обработка ошибок, многопоточность, Git-воркфлоу |
+| **1.4.0** | Апрель 2026 | Коваленко П. | Обновление до .NET 10, C# 14, удаление System.Text.Json |
 
 ---
 
@@ -58,7 +60,7 @@
 | Компонент | Требование | Примечание |
 |-----------|------------|------------|
 | **ОС** | Windows 10 (21H2+) / Windows 11 (22H2+) | Только x64, ARM64 не поддерживается |
-| **.NET** | .NET 8 Desktop Runtime | Self-contained deployment опционально |
+| **.NET** | .NET 10 Desktop Runtime | Self-contained deployment опционально |
 | **UI Framework** | WinUI 3 (предпочтительно) или WPF + Fluent UI | Fluent Design, Mica backdrop |
 | **Права** | Запуск без прав: ограниченный функционал; Запуск с правами администратора: полный доступ | UAC-запрос по требованию |
 | **ОЗУ** | ≤ 100 МБ (покой), ≤ 250 МБ (пик) | Зависит от количества сессий |
@@ -759,5 +761,268 @@ mh-ts-manager/
 ---
 
 > 📌 **Примечание:** Программа разрабатывается **только для Windows**. Кроссплатформенная поддержка (Linux, macOS) не планируется и не рассматривается в рамках текущей версии.
+
+---
+
+## 🛡️ 12. Лучшие практики разработки
+
+> Данный раздел основан на практиках проекта [mh-compressor-manager](https://github.com/pavelvkovalenko/mh-compressor-manager) и адаптирован для стека C# / .NET 8 / WinUI 3.
+
+### 12.1. Язык комментариев и сообщений
+
+| Компонент | Правило | Пример |
+|-----------|---------|--------|
+| **Комментарии в коде** | На **русском языке** | `// Получение списка активных сессий` |
+| **Пользовательские сообщения** | Через систему локализации (`.resw`), по умолчанию — язык ОС | `ResourceLoader.GetString("Toolbar.Connect")` |
+| **Логи** | На **английском языке** (единый формат для диагностики) | `Logger.Info("Session refresh completed. Count: {0}", count)` |
+| **Имена переменных и функций** | На **английском языке** (`PascalCase` для методов, `_camelCase` для полей) | `GetSessionInfoAsync()`, `_sessionService` |
+| **Doxygen/XML-комментарии** | На **русском языке** для публичных API | `/// <summary>Перечисляет пользовательские сессии.</summary>` |
+
+```csharp
+// ✅ ПРАВИЛЬНО: комментарий на русском, лог на английском
+// Перечисление окон, видимых в Alt+Tab, для целевой сессии
+Logger.Debug("Enumerating windows for session {0}", sessionId);
+
+// ❌ НЕПРАВИЛЬНО: хардкод русского текста в логе
+Logger.Info("Перечисление окон для сессии " + sessionId);
+```
+
+### 12.2. Безопасность
+
+| Правило | Описание | Аналог в C# |
+|---------|----------|-------------|
+| **Запрет небезопасных вызовов** | Не использовать `Process.Start(string)` без валидации | Всегда использовать `ProcessStartInfo` с явным `FileName` и `Arguments` |
+| **Защита от symlink-атак** | Проверка путей перед записью | `Path.GetFullPath()`, проверка `FileAttributes.ReparsePoint` |
+| **Санитизация ввода** | Валидация всех внешних данных | `Regex.IsMatch()`, `string.IsNullOrWhiteSpace()`, maxLength-проверки |
+| **Минимизация привилегий** | Запуск без прав администратора по умолчанию | Повышение через `runas` только по требованию |
+| **Безопасное хранение** | Не хранить пароли, токены, PII в логах | Логи содержат только ID сессии, коды ошибок, метрики |
+
+### 12.3. Управление ресурсами (RAII-аналоги в C#)
+
+| Паттерн | C++ (mh-compressor-manager) | C# (mh-ts-manager) |
+|---------|-----------------------------|-------------------|
+| **Автоматическая очистка** | `std::unique_ptr` с custom deleter | `using var`, `SafeHandle`, `IDisposable` |
+| **Защита от утечек** | RAII-обёртки для C API | `try-finally`, `CancellationToken` |
+| **Явное владение** | `unique_ptr` (exclusive), `shared_ptr` (shared) | `readonly` поля, инъекция зависимостей |
+| **Совместимость с native** | `.get()` для raw pointer | `GCHandle`, `Marshal.AllocHGlobal` + `SafeHandle` |
+
+```csharp
+// ✅ ПРАВИЛЬНО: using var для SafeHandle (автоматический WTSFreeMemory)
+using var hServer = WTSOpenServer(serverName);
+using var pSessionInfo = WTSEnumerateSessionsEx(hServer);
+
+// ✅ ПРАВИЛЬНО: CancellationToken для отмены фоновых задач
+using var cts = new CancellationTokenSource();
+await Task.Run(() => EnumerateWindows(cts.Token), cts.Token);
+
+// ❌ НЕПРАВИЛЬНО: ручное управление ресурсами без защиты
+var ptr = WTSQuerySessionInformation(...);
+// ... код может выбросить исключение до WTSFreeMemory(ptr)
+WTSFreeMemory(ptr);
+```
+
+### 12.4. Обработка ошибок
+
+| Правило | Описание |
+|---------|----------|
+| **Логи через единый сервис** | Все ошибки — через `ILogger`/`Logger` с уровнями `Error`, `Warning`, `Info`, `Debug` |
+| **Сохранение контекста ошибки** | Включать ID сессии, имя функции, `HRESULT`/`Win32Exception.NativeErrorCode` |
+| **Идемпотентность операций** | Проверка состояния перед действием (не отключать уже отключённую сессию) |
+| **Не использовать исключения для потока управления** | `TryGetSession()` вместо `GetSession()` + `try-catch` |
+| **Очистка при ошибке** | Удалять временные файлы, освобождать хендлы в `finally`/`using` |
+
+```csharp
+// ✅ ПРАВИЛЬНО: try-catch с контекстом и очисткой
+public async Task<bool> DisconnectSessionAsync(int sessionId, CancellationToken ct)
+{
+    try
+    {
+        Logger.Info("Attempting to disconnect session {0}", sessionId);
+        var state = await GetSessionStateAsync(sessionId, ct);
+        if (state == WTSConnectState.Disconnected)
+        {
+            Logger.Info("Session {0} already disconnected, skipping", sessionId);
+            return true; // Идемпотентность
+        }
+        return await ExecuteWtsOperationAsync(sessionId, WTSCommand.Disconnect, ct);
+    }
+    catch (Win32Exception ex) when (ex.NativeErrorCode == 5) // ACCESS_DENIED
+    {
+        Logger.Warning("Access denied for session {0}: {1}", sessionId, ex.Message);
+        return false;
+    }
+    catch (OperationCanceledException)
+    {
+        Logger.Info("Session disconnect cancelled by user");
+        throw;
+    }
+    catch (Exception ex)
+    {
+        Logger.Error("Unexpected error disconnecting session {0}: {1}", sessionId, ex.Message);
+        return false;
+    }
+}
+```
+
+### 12.5. Многопоточность
+
+| Правило | Описание |
+|---------|----------|
+| **`async/await` для I/O** | Все вызовы к Win32 API — через `Task.Run` с `CancellationToken` |
+| **`lock` для защиты состояния** | `private readonly object _lock = new();` для чтения/записи общих данных |
+| **`ReaderWriterLockSlim` при частом чтении** | Множество читателей (обновление UI), редкие записи (опрос сессий) |
+| **Не блокировать UI-поток** | `ConfigureAwait(false)` в сервисах, `DispatcherQueue` для обновления UI |
+| **Избегать detached задач** | Не использовать `Task.Run(() => ..., TaskCreationOptions.DetachedFromParent)` |
+| **Переиспользование буферов** | `ArrayPool<T>` для временных массивов при перечислении окон |
+
+```csharp
+// ✅ ПРАВИЛЬНО: ReaderWriterLockSlim для кэша сессий
+private readonly ReaderWriterLockSlim _cacheLock = new();
+private readonly Dictionary<int, SessionInfo> _sessionCache = new();
+
+public IReadOnlyList<SessionInfo> GetCachedSessions()
+{
+    _cacheLock.EnterReadLock();
+    try { return _sessionCache.Values.ToList().AsReadOnly(); }
+    finally { _cacheLock.ExitReadLock(); }
+}
+
+public async Task RefreshCacheAsync(CancellationToken ct)
+{
+    var freshSessions = await _wtsService.EnumerateSessionsAsync(ct);
+    _cacheLock.EnterWriteLock();
+    try { _sessionCache.Clear(); foreach (var s in freshSessions) _sessionCache[s.Id] = s; }
+    finally { _cacheLock.ExitWriteLock(); }
+}
+```
+
+### 12.6. Производительность
+
+| Оптимизация | Описание |
+|-------------|----------|
+| **Виртуализация списков** | `ItemsSource` + `x:Load`/`x:Phase` для отложенной отрисовки |
+| **Пакетное обновление UI** | Группировка изменений сессий, один `DispatcherQueue.TryEnqueue` |
+| **Таймауты на внешние вызовы** | `CancellationTokenSource.Timeout` для `Process.WaitForExit`, `Task.WhenAny` |
+| **Кэширование иконок** | `ImageSource` кэшируется по PID, не извлекается при каждом обновлении |
+| **`IValueConverter` для форматирования** | Форматирование чисел (CPU%, Memory) через конвертеры, не в ViewModel |
+| **`ArrayPool<T>` для EnumWindows** | Переиспользование буферов при перечислении окон |
+
+### 12.7. Git-воркфлоу и Pull Request
+
+> На основе практик mh-compressor-manager, адаптировано для Windows-разработки.
+
+#### Ветки
+
+| Правило | Формат | Пример |
+|---------|--------|--------|
+| **Основная ветка** | `main` | Защищена, требует PR |
+| **Ветки фич** | `feature/описание` | `feature/column-drag-drop` |
+| **Ветки исправлений** | `fix/описание` | `fix/session-state-aggregation` |
+| **Ветки рефакторинга** | `refactor/описание` | `refactor/wts-service-di` |
+
+#### Коммиты
+
+- **Язык:** русский
+- **Формат:** `[Тип]: Краткое описание (до 72 символов)`
+- **Типы:** `fix:`, `chore:`, `feat:`, `refactor:`, `docs:`, `test:`, `perf:`
+
+```
+✅ feat: добавление drag-and-drop для столбцов таблицы
+✅ fix: корректное определение заблокированной сессии
+✅ docs: обновление технической спецификации v1.3
+❌ "update", "fix bugs", "wip" — запрещены
+```
+
+#### Pull Request
+
+- **Заголовок:** `[Тип]: Краткое описание на русском`
+- **Описание:** подробное, на русском языке, структура:
+  1. **Проблема** (симптомы, воспроизведение)
+  2. **Решение** (затронутые файлы, подход)
+  3. **Результат** (как проверить, скриншоты)
+- **Тестирование:** раздел `## ✅ Тестирование` с чек-листом:
+  - [ ] Сборка без ошибок
+  - [ ] Все unit-тесты пройдены
+  - [ ] Ручное тестирование на Windows 10/11
+
+#### Запреты
+
+- ❌ Прямая работа с `main` (только через PR)
+- ❌ Force-push в `main`
+- ❌ Мерж без пройденных тестов и ревью
+
+---
+
+## 📁 13. Структура проекта (обновлённая)
+
+```
+mh-ts-manager/
+├── README.md                          ← Полный обзор проекта (пользователи + разработчики)
+├── LICENSE                            ← Лицензия (MIT / Proprietary)
+├── CONTRIBUTING.md                    ← Правила Pull Request, шаблон описания
+├── .gitignore                         ← Исключения для C#, WinUI, VS, логов
+├── _build.ps1                         ← Локальная сборка (Debug/Release)
+├── _publish.ps1                       ← Публикация (MSIX / self-contained EXE)
+│
+├── docs/                              ← Документация
+│   ├── specification/
+│   │   └── TECHNICAL_SPECIFICATION.md ← Этот файл (ТЗ v1.3.0)
+│   └── development/
+│       ├── RULES.md                   ← Правила кода (C# 12, async/await, DI, x:Uid)
+│       ├── DEPLOY.md                  ← Сборка, публикация, подпись кода
+│       └── QWEN.md                    ← Контекст для AI-помощников
+│
+├── scripts/                           ← Скрипты автоматизации
+│   ├── _build.ps1                     ← Сборка (dotnet build, msbuild)
+│   ├── _publish.ps1                   ← Публикация (msix, self-contained)
+│   └── _extract-resw.ps1              ← Экспорт ресурсных ключей для перевода
+│
+├── src/
+│   ├── mh-ts-manager.csproj           ← Проект WinUI 3
+│   ├── App.xaml / App.xaml.cs         ← Точка входа, DI-контейнер, настройка темы
+│   ├── Views/
+│   │   ├── MainWindow.xaml            ← Основное окно (Mica, Fluent Design)
+│   │   ├── Controls/
+│   │   │   ├── SessionItemControl.xaml ← Элемент сессии (Expander + таблица)
+│   │   │   ├── UserCellControl.xaml   ← Композитная ячейка «Пользователь»
+│   │   │   └── AppWindowItemControl.xaml ← Элемент окна приложения
+│   │   └── Dialogs/
+│   │       ├── ElevateDialog.xaml     ← Диалог повышения прав
+│   │       └── AboutDialog.xaml       ← О программе / Настройки
+│   ├── ViewModels/
+│   │   ├── MainViewModel.cs           ← Логика списка сессий (CommunityToolkit.Mvvm)
+│   │   ├── SessionViewModel.cs        ← Данные одной сессии
+│   │   └── SettingsViewModel.cs       ← Настройки и локализация
+│   ├── Services/
+│   │   ├── WtsSessionService.cs       ← Обёртка над wtsapi32.dll (SafeHandle)
+│   │   ├── WindowEnumeratorService.cs ← EnumWindows + фильтрация Alt+Tab
+│   │   ├── SessionAppStateService.cs  ← Подсчёт приложений, блокировка, скринсейвер
+│   │   ├── CommandExecutor.cs         ← Безопасный запуск mstsc, msg, lusrmgr
+│   │   ├── SettingsService.cs         ← Чтение/запись settings.json (атомарная запись)
+│   │   ├── LocalizationService.cs     ← Обёртка над ResourceManager
+│   │   └── Logger.cs                  ← Логирование (файл + Debug)
+│   └── Models/
+│       ├── SessionInfo.cs             ← DTO сессии (record, immutable)
+│       ├── AppWindowInfo.cs           ← DTO окна приложения (record)
+│       └── UserCellData.cs            ← Данные для композитной ячейки (record)
+│
+├── Strings/                           ← Локализация (.resw)
+│   ├── en-US/Resources.resw
+│   ├── ru-RU/Resources.resw
+│   └── ...                            ← Дополнительные языки
+│
+├── tests/
+│   ├── UnitTests/                     ← xUnit / MSTest
+│   │   ├── WtsSessionServiceTests.cs
+│   │   ├── WindowFilterTests.cs
+│   │   ├── UserCellFormatTests.cs
+│   │   └── SettingsServiceTests.cs
+│   └── IntegrationTests/              ← Ручные тесты на Win10/11
+│       └── README.md                  ← Инструкция по запуску
+│
+└── packaging/
+    ├── manifest.msix                  ← Манифест MSIX
+    └── appxmanifest.xml               ← PackageIdentity: mh-ts-manager
+```
 
 ---

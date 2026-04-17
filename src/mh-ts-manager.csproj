@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>mh-ts-manager.ico</ApplicationIcon>
+
+    <!-- Assembly info -->
+    <AssemblyName>mh-ts-manager</AssemblyName>
+    <RootNamespace>MhTsManager</RootNamespace>
+    <Version>1.4.0.0</Version>
+    <Product>Диспетчер пользовательских сессий</Product>
+    <Copyright>© 2026 Коваленко Павел</Copyright>
+
+    <!-- Build settings -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>14</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft-WindowsAPICodePack-Shell" Version="1.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="mh-ts-manager.ico" Condition="Exists('mh-ts-manager.ico')" />
+  </ItemGroup>
+
+</Project>

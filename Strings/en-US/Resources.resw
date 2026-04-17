@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- === Application === -->
+  <data name="App.WindowTitle" xml:space="preserve">
+    <value>User Session Manager</value>
+  </data>
+  <data name="App.About.Title" xml:space="preserve">
+    <value>About</value>
+  </data>
+
+  <!-- === Toolbar === -->
+  <data name="Toolbar.UsersTitle" xml:space="preserve">
+    <value>Users</value>
+  </data>
+  <data name="Toolbar.Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="Toolbar.SendMessage" xml:space="preserve">
+    <value>Send Message</value>
+  </data>
+  <data name="Toolbar.AdminMode.Locked" xml:space="preserve">
+    <value>Unlock System Administrator mode?</value>
+  </data>
+  <data name="Toolbar.AdminMode.Active" xml:space="preserve">
+    <value>System Administrator mode</value>
+  </data>
+
+  <!-- === Session Statuses === -->
+  <data name="Status.SessionActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="Status.SessionDisconnected" xml:space="preserve">
+    <value>Disconnected</value>
+  </data>
+  <data name="Status.SessionIdle" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="Status.SessionLocked" xml:space="preserve">
+    <value>Locked</value>
+  </data>
+  <data name="Status.SessionUnavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+
+  <!-- === Column Headers === -->
+  <data name="Column.User" xml:space="preserve">
+    <value>User</value>
+  </data>
+  <data name="Column.Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Column.CPU" xml:space="preserve">
+    <value>CPU</value>
+  </data>
+  <data name="Column.Memory" xml:space="preserve">
+    <value>Memory</value>
+  </data>
+  <data name="Column.Disk" xml:space="preserve">
+    <value>Disk</value>
+  </data>
+  <data name="Column.Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="Column.GPU" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Column.GPUEngine" xml:space="preserve">
+    <value>GPU Engine</value>
+  </data>
+
+  <!-- === Context Menu === -->
+  <data name="ContextMenu.Expand" xml:space="preserve">
+    <value>Expand</value>
+  </data>
+  <data name="ContextMenu.Collapse" xml:space="preserve">
+    <value>Collapse</value>
+  </data>
+  <data name="ContextMenu.Connect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="ContextMenu.Switch" xml:space="preserve">
+    <value>Switch To</value>
+  </data>
+  <data name="ContextMenu.Disconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="ContextMenu.Logoff" xml:space="preserve">
+    <value>Log Off</value>
+  </data>
+  <data name="ContextMenu.SendMessage" xml:space="preserve">
+    <value>Send Message...</value>
+  </data>
+</root>

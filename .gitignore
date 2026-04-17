@@ -1,41 +1,115 @@
-# Prerequisites
+# ============================================
+# Compiled Object files and Build artifacts
+# ============================================
 *.d
-
-# Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
-# Precompiled Headers
 *.gch
 *.pch
-
-# Linker files
 *.ilk
+*.dwo
 
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
+# Compiled libraries and executables
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
-
-# Executables
 *.exe
 *.out
 *.app
 
-# debug information files
-*.dwo
+# Debug information
+*.pdb
+*.idb
+
+# ============================================
+# .NET / C# / WinUI specific
+# ============================================
+
+# Build output
+bin/
+obj/
+*.nupkg
+*.snupkg
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.sln.docstates
+*.userosscache
+*.sln.cache
+
+# Rider / ReSharper
+.idea/
+*.sln.DotSettings
+*.csproj.DotSettings
+
+# Test results
+TestResults/
+*.coverage
+*.coveragexml
+*.cobertura.xml
+
+# NuGet
+packages/
+project.assets.json
+nuget.config
+
+# MSIX / AppX packaging
+*.msix
+*.msixupload
+*.appx
+*.appxbundle
+*.appxsym
+AppPackages/
+bundle/
+
+# Self-contained publish
+publish/
+
+# ============================================
+# Logs and temp files
+# ============================================
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+
+# App data (local)
+%APPDATA%/mh-ts-manager/
+
+# ============================================
+# Environment and secrets
+# ============================================
+.env
+.env.local
+*.env.*
+secrets.json
+*.pfx
+*.snk
+
+# ============================================
+# OS files
+# ============================================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ============================================
+# Node / Python (for tooling scripts)
+# ============================================
+node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/

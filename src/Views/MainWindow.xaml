@@ -1,0 +1,201 @@
+<Window x:Class="MhTsManager.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:MhTsManager.ViewModels"
+        Title="Диспетчер пользовательских сессий"
+        Width="1024" Height="680"
+        MinWidth="800" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+
+    <Window.Resources>
+        <!-- Конвертер для цвета статуса -->
+        <Local:StringToColorConverter x:Key="StatusToColorConverter"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <Border Grid.Row="0" Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1" Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Левая часть: заголовок -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding UsersTitle}" Style="{StaticResource TitleTextStyle}"
+                               Margin="0,0,8,0"/>
+                    <TextBlock x:Name="LoadingIndicator" Text="⟳" Foreground="{StaticResource AccentBrush}"
+                               FontSize="16" Visibility="Collapsed" Margin="8,0,0,0">
+                        <TextBlock.RenderTransform>
+                            <RotateTransform x:Name="LoadingRotation" Angle="0" CenterX="8" CenterY="8"/>
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Правая часть: кнопки -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <!-- Кнопка-замок -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="4,0"
+                            Command="{Binding ToggleAdminModeCommand}"
+                            ToolTip="{Binding AdminModeTooltip}">
+                        <TextBlock Text="{Binding AdminModeIcon}" FontSize="14"/>
+                    </Button>
+
+                    <!-- Подключить -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="4,0"
+                            Command="{Binding ConnectSelectedCommand}"
+                            ToolTip="Подключить к выбранной сессии">
+                        <TextBlock Text="🔗" FontSize="14"/>
+                    </Button>
+
+                    <!-- Отправить сообщение -->
+                    <Button Style="{StaticResource FluentButtonStyle}" Margin="4,0"
+                            Command="{Binding OpenSendMessageDialogCommand}"
+                            ToolTip="Отправить сообщение">
+                        <TextBlock Text="✉" FontSize="14"/>
+                    </Button>
+
+                    <!-- Меню ⋮ -->
+                    <Menu VerticalAlignment="Center">
+                        <MenuItem Style="{DynamicResource FluentMenuItemStyle}">
+                            <MenuItem.Header>
+                                <TextBlock Text="⋮" FontSize="16"/>
+                            </MenuItem.Header>
+                            <MenuItem Header="Развернуть все" Click="ExpandAll_Click"/>
+                            <MenuItem Header="Свернуть все" Click="CollapseAll_Click"/>
+                            <Separator/>
+                            <MenuItem Header="Управление пользователями"
+                                      Command="{Binding OpenUserManagementCommand}"/>
+                            <Separator/>
+                            <MenuItem Header="О программе"
+                                      Command="{Binding OpenAboutDialogCommand}"/>
+                        </MenuItem>
+                    </Menu>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Таблица сессий -->
+        <ListView Grid.Row="1" x:Name="SessionsListView"
+                  ItemsSource="{Binding Sessions}"
+                  SelectedItem="{Binding SelectedSession}"
+                  ItemContainerStyle="{StaticResource SessionListViewItemStyle}"
+                  BorderThickness="0"
+                  Background="Transparent"
+                  VirtualizingStackPanel.IsVirtualizing="True"
+                  VirtualizingStackPanel.VirtualizationMode="Recycling">
+
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Пользователь" Width="280">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="4,2">
+                                    <!-- Композитная ячейка пользователя -->
+                                    <TextBlock Text="{Binding SessionInfo.FormattedUserString}"
+                                               Style="{StaticResource TableTextStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Состояние" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <!-- Индикатор статуса -->
+                                    <Ellipse Width="8" Height="8" Margin="0,0,6,0"
+                                             Fill="{Binding StatusText, Converter={StaticResource StatusToColorConverter}}"/>
+                                    <TextBlock Text="{Binding StatusText}" Style="{StaticResource TableTextStyle}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="ЦП" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding CpuText}" Style="{StaticResource TableTextStyle}"
+                                           HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Память" Width="80">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding MemoryText}" Style="{StaticResource TableTextStyle}"
+                                           HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Диск" Width="80">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding DiskText}" Style="{StaticResource TableTextStyle}"
+                                           HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Сеть" Width="80">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding NetworkText}" Style="{StaticResource TableTextStyle}"
+                                           HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="GPU" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding SessionInfo.GpuPercent, StringFormat={}{0:F1}%}"
+                                           Style="{StaticResource TableTextStyle}"
+                                           HorizontalAlignment="Right"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+
+            <!-- Контекстное меню сессии (правый клик) -->
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Развернуть" Click="ExpandSession_Click"/>
+                    <MenuItem Header="Свернуть" Click="CollapseSession_Click"/>
+                    <Separator/>
+                    <MenuItem Header="🔗 Подключить" Command="{Binding ConnectCommand}"/>
+                    <MenuItem Header="🔄 Переключиться" Command="{Binding SwitchCommand}"/>
+                    <MenuItem Header="🔌 Отключить" Command="{Binding DisconnectCommand}"/>
+                    <MenuItem Header="🚪 Выйти" Command="{Binding LogoffCommand}"/>
+                    <Separator/>
+                    <MenuItem Header="✉ Отправить сообщение..."/>
+                </ContextMenu>
+            </ListView.ContextMenu>
+
+            <!-- Двойной клик → подключиться -->
+            <ListView.InputBindings>
+                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding ConnectSelectedCommand}"/>
+            </ListView.InputBindings>
+        </ListView>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="{StaticResource CardBackgroundBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16,6">
+            <TextBlock x:Name="StatusBarText" Text="Готово"
+                       Style="{StaticResource SubtitleTextStyle}"/>
+        </Border>
+    </Grid>
+</Window>

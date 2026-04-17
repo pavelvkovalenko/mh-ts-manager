@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- === Приложение === -->
+  <data name="App.WindowTitle" xml:space="preserve">
+    <value>Диспетчер пользовательских сессий</value>
+  </data>
+  <data name="App.About.Title" xml:space="preserve">
+    <value>О приложении</value>
+  </data>
+
+  <!-- === Toolbar === -->
+  <data name="Toolbar.UsersTitle" xml:space="preserve">
+    <value>Пользователи</value>
+  </data>
+  <data name="Toolbar.Connect" xml:space="preserve">
+    <value>Подключить</value>
+  </data>
+  <data name="Toolbar.SendMessage" xml:space="preserve">
+    <value>Отправить сообщение</value>
+  </data>
+  <data name="Toolbar.AdminMode.Locked" xml:space="preserve">
+    <value>Разблокировать режим системного администратора?</value>
+  </data>
+  <data name="Toolbar.AdminMode.Active" xml:space="preserve">
+    <value>Режим системного администратора</value>
+  </data>
+
+  <!-- === Статусы сессий === -->
+  <data name="Status.SessionActive" xml:space="preserve">
+    <value>Активна</value>
+  </data>
+  <data name="Status.SessionDisconnected" xml:space="preserve">
+    <value>Отключена</value>
+  </data>
+  <data name="Status.SessionIdle" xml:space="preserve">
+    <value>Бездействие</value>
+  </data>
+  <data name="Status.SessionLocked" xml:space="preserve">
+    <value>Заблокирована</value>
+  </data>
+  <data name="Status.SessionUnavailable" xml:space="preserve">
+    <value>Недоступна</value>
+  </data>
+
+  <!-- === Заголовки столбцов === -->
+  <data name="Column.User" xml:space="preserve">
+    <value>Пользователь</value>
+  </data>
+  <data name="Column.Status" xml:space="preserve">
+    <value>Состояние</value>
+  </data>
+  <data name="Column.CPU" xml:space="preserve">
+    <value>ЦП</value>
+  </data>
+  <data name="Column.Memory" xml:space="preserve">
+    <value>Память</value>
+  </data>
+  <data name="Column.Disk" xml:space="preserve">
+    <value>Диск</value>
+  </data>
+  <data name="Column.Network" xml:space="preserve">
+    <value>Сеть</value>
+  </data>
+  <data name="Column.GPU" xml:space="preserve">
+    <value>GPU</value>
+  </data>
+  <data name="Column.GPUEngine" xml:space="preserve">
+    <value>Движок GPU</value>
+  </data>
+
+  <!-- === Контекстное меню сессии === -->
+  <data name="ContextMenu.Expand" xml:space="preserve">
+    <value>Развернуть</value>
+  </data>
+  <data name="ContextMenu.Collapse" xml:space="preserve">
+    <value>Свернуть</value>
+  </data>
+  <data name="ContextMenu.Connect" xml:space="preserve">
+    <value>Подключить</value>
+  </data>
+  <data name="ContextMenu.Switch" xml:space="preserve">
+    <value>Переключиться</value>
+  </data>
+  <data name="ContextMenu.Disconnect" xml:space="preserve">
+    <value>Отключить</value>
+  </data>
+  <data name="ContextMenu.Logoff" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
+  <data name="ContextMenu.SendMessage" xml:space="preserve">
+    <value>Отправить сообщение...</value>
+  </data>
+</root>
