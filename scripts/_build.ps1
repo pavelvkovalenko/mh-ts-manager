@@ -2,7 +2,7 @@
 .SYNOPSIS
     Скрипт локальной сборки mh-ts-manager с автоматической установкой зависимостей
 .DESCRIPTION
-    Проверяет все зависимости (.NET 8 SDK, NuGet), запрашивает разрешение пользователя,
+    Проверяет все зависимости (.NET 10 SDK, NuGet), запрашивает разрешение пользователя,
     устанавливает недостающие компоненты, затем выполняет restore + build.
     Аналог _local-build.sh из mh-compressor-manager, но с интерактивной установкой.
 .PARAMETER Configuration
@@ -43,7 +43,7 @@ $SolutionPath = Join-Path $ProjectRoot "src\mh-ts-manager.sln"
 $ProjectPath = Join-Path $ProjectRoot "src\mh-ts-manager.csproj"
 
 # Зависимости
-$DotNetSdkVersion = "8.0"
+$DotNetSdkVersion = "10.0"
 $DotNetSdkInstallerUrl = "https://dot.net/v1/dotnet-install.ps1"
 $GitMinimumVersion = "2.30"
 
@@ -137,7 +137,7 @@ function Test-DotNetSdk {
 }
 
 function Install-DotNetSdk {
-    param([string]$Channel = "8.0")
+    param([string]$Channel = "10.0")
 
     Write-Step "Загрузка установщика .NET SDK $Channel..."
 
@@ -173,8 +173,8 @@ function Install-DotNetSdk {
         Write-Error-Custom "Ошибка установки .NET SDK: $_"
         Write-Host ""
         Write-Info "Альтернативная установка:"
-        Write-Host "    1. Откройте: https://dotnet.microsoft.com/download/dotnet/8.0" -ForegroundColor Gray
-        Write-Host "    2. Скачайте '.NET SDK 8.0.x' для Windows x64" -ForegroundColor Gray
+        Write-Host "    1. Откройте: https://dotnet.microsoft.com/download/dotnet/10.0" -ForegroundColor Gray
+        Write-Host "    2. Скачайте '.NET SDK 10.0.x' для Windows x64" -ForegroundColor Gray
         Write-Host "    3. Запустите установщик" -ForegroundColor Gray
         Write-Host ""
         return $false
@@ -236,7 +236,7 @@ function Invoke-DependencyCheck {
             -Description "Официальный SDK от Microsoft. Установка для текущего пользователя, без прав администратора."
 
         if ($permission) {
-            $installResult = Install-DotNetSdk
+            $installResult = Install-DotNetSdk -Channel $DotNetSdkVersion
             if (-not $installResult) {
                 $allDepsOk = $false
             }
@@ -327,7 +327,7 @@ Write-Success "Сборка завершена успешно"
 Write-Host ""
 
 # Шаг 5: Итоговая информация
-$OutputPath = Join-Path $ProjectRoot "src\bin\$Configuration\net8.0-windows"
+$OutputPath = Join-Path $ProjectRoot "src\bin\$Configuration\net10.0-windows"
 if (Test-Path $OutputPath) {
     $exeFile = Get-ChildItem -Path $OutputPath -Filter "mh-ts-manager.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($exeFile) {
