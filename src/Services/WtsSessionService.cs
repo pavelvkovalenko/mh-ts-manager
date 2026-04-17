@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using MhTsManager.Models;
@@ -52,7 +53,7 @@ public interface IWtsSessionService
 /// </summary>
 internal sealed class SafeWtsServerHandle : SafeHandle
 {
-    private SafeWtsServerHandle() : base(IntPtr.Zero, true) { }
+    public SafeWtsServerHandle() : base(IntPtr.Zero, true) { }
 
     public override bool IsInvalid => handle == IntPtr.Zero || handle == new IntPtr(-1);
 
