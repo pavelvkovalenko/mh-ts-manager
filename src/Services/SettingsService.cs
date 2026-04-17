@@ -1,7 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Конфигурация приложения (сериализуемая модель).
@@ -242,4 +243,5 @@ public sealed class SettingsService : ISettingsService
             }
         };
     }
+}
 }

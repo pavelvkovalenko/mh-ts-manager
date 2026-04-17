@@ -3,7 +3,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using MhTsManager.Models;
 
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Интерфейс сервиса перечисления окон, видимых в Alt+Tab, для заданной сессии.
@@ -259,4 +260,5 @@ public sealed class WindowEnumeratorService : IWindowEnumeratorService
             return null;
         }
     }
+}
 }

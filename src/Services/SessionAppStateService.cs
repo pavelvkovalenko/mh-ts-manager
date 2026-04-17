@@ -1,6 +1,7 @@
 using MhTsManager.Models;
 
-namespace MhTsManager.Services;
+namespace MhTsManager.Services
+{
 
 /// <summary>
 /// Интерфейс сервиса состояния приложений сессии.
@@ -114,4 +115,5 @@ public sealed class SessionAppStateService : ISessionAppStateService
         _logger.Debug("Screensaver check not implemented for session {0}", sessionId);
         return false;
     }
+}
 }

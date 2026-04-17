@@ -7,74 +7,75 @@ using System.Windows.Media.Animation;
 using MhTsManager.Services;
 using MhTsManager.ViewModels;
 
-namespace MhTsManager.Views;
-
-/// <summary>
-/// Главное окно приложения.
-/// </summary>
-public partial class MainWindow : Window
+namespace MhTsManager.Views
 {
-    private readonly MainViewModel _viewModel;
-    private readonly Logger _logger;
-
-    public MainWindow(MainViewModel viewModel, Logger logger)
+    /// <summary>
+    /// Главное окно приложения.
+    /// </summary>
+    public partial class MainWindow : Window
     {
-        InitializeComponent();
-        _viewModel = viewModel;
-        _logger = logger;
-        DataContext = _viewModel;
+        private readonly MainViewModel _viewModel;
+        private readonly Logger _logger;
 
-        // Привязка Title к ViewModel
-        SetBinding(TitleProperty, new Binding("WindowTitle"));
-
-        // Обработка изменения IsLoading для индикатора
-        _viewModel.PropertyChanged += (s, e) =>
+        public MainWindow(MainViewModel viewModel, Logger logger)
         {
-            if (e.PropertyName == nameof(MainViewModel.IsLoading))
+            InitializeComponent();
+            _viewModel = viewModel;
+            _logger = logger;
+            DataContext = _viewModel;
+
+            // Привязка Title к ViewModel
+            SetBinding(TitleProperty, new Binding("WindowTitle"));
+
+            // Обработка изменения IsLoading для индикатора
+            _viewModel.PropertyChanged += (s, e) =>
             {
-                Dispatcher.Invoke(() =>
+                if (e.PropertyName == nameof(MainViewModel.IsLoading))
                 {
-                    LoadingIndicator.Visibility = _viewModel.IsLoading ? Visibility.Visible : Visibility.Collapsed;
-                });
-            }
-        };
+                    Dispatcher.Invoke(() =>
+                    {
+                        LoadingIndicator.Visibility = _viewModel.IsLoading ? Visibility.Visible : Visibility.Collapsed;
+                    });
+                }
+            };
 
-        _logger.Info("MainWindow initialized");
-    }
+            _logger.Info("MainWindow initialized");
+        }
 
-    /// <summary>
-    /// Развернуть все сессии.
-    /// </summary>
-    private void ExpandAll_Click(object sender, RoutedEventArgs e)
-    {
-        foreach (var vm in _viewModel.Sessions)
-            vm.IsExpanded = true;
-    }
+        /// <summary>
+        /// Развернуть все сессии.
+        /// </summary>
+        private void ExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var vm in _viewModel.Sessions)
+                vm.IsExpanded = true;
+        }
 
-    /// <summary>
-    /// Свернуть все сессии.
-    /// </summary>
-    private void CollapseAll_Click(object sender, RoutedEventArgs e)
-    {
-        foreach (var vm in _viewModel.Sessions)
-            vm.IsExpanded = false;
-    }
+        /// <summary>
+        /// Свернуть все сессии.
+        /// </summary>
+        private void CollapseAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var vm in _viewModel.Sessions)
+                vm.IsExpanded = false;
+        }
 
-    /// <summary>
-    /// Развернуть выбранную сессию.
-    /// </summary>
-    private void ExpandSession_Click(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.SelectedSession != null)
-            _viewModel.SelectedSession.IsExpanded = true;
-    }
+        /// <summary>
+        /// Развернуть выбранную сессию.
+        /// </summary>
+        private void ExpandSession_Click(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel.SelectedSession != null)
+                _viewModel.SelectedSession.IsExpanded = true;
+        }
 
-    /// <summary>
-    /// Свернуть выбранную сессию.
-    /// </summary>
-    private void CollapseSession_Click(object sender, RoutedEventArgs e)
-    {
-        if (_viewModel.SelectedSession != null)
-            _viewModel.SelectedSession.IsExpanded = false;
+        /// <summary>
+        /// Свернуть выбранную сессию.
+        /// </summary>
+        private void CollapseSession_Click(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel.SelectedSession != null)
+                _viewModel.SelectedSession.IsExpanded = false;
+        }
     }
 }
