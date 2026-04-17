@@ -27,6 +27,20 @@ namespace MhTsManager.Views
             // Привязка Title к ViewModel
             SetBinding(TitleProperty, new Binding("WindowTitle"));
 
+            // Запуск анимации загрузки
+            var loadingAnimation = TryFindResource("LoadingAnimation") as Storyboard;
+            if (loadingAnimation != null && LoadingIndicator != null)
+            {
+                var rotateTransform = LoadingIndicator.RenderTransform as RotateTransform;
+                if (rotateTransform == null)
+                {
+                    rotateTransform = new RotateTransform(0);
+                    LoadingIndicator.RenderTransform = rotateTransform;
+                }
+                Storyboard.SetTarget(loadingAnimation, LoadingIndicator);
+                loadingAnimation.Begin();
+            }
+
             // Обработка изменения IsLoading для индикатора
             _viewModel.PropertyChanged += (s, e) =>
             {
@@ -38,6 +52,10 @@ namespace MhTsManager.Views
                     });
                 }
             };
+
+            // Убеждаемся, что окно видимо и активно
+            this.ShowActivated = true;
+            this.Visibility = Visibility.Visible;
 
             _logger.Info("MainWindow initialized");
         }
