@@ -45,7 +45,6 @@ public partial class App : Application
             _logger.Info("=== APPLICATION STARTUP BEGIN ===");
             _logger.Info("Arguments: {0}", string.Join(" ", e.Args));
             _logger.Info("Debug mode: {0}", debugMode);
-            _logger.Flush();
 
             // Создаём консольное окно в режиме отладки
             if (debugMode)
@@ -60,7 +59,6 @@ public partial class App : Application
             _logger.Info("OS Version: {0}", Environment.OSVersion.VersionString);
             _logger.Info("Process Path: {0}", Environment.ProcessPath ?? "N/A");
             _logger.Info("Current Directory: {0}", Environment.CurrentDirectory);
-            _logger.Flush();
 
             // Парсинг аргументов
             var customConfigPath = ParseArgument(e.Args, "--config");
@@ -70,7 +68,6 @@ public partial class App : Application
             _logger.Info("Config path: {0}", customConfigPath ?? "(default)");
             _logger.Info("Language: {0}", language);
             _logger.Info("Theme: {0}", theme);
-            _logger.Flush();
 
             if (e.Args.Contains("--help") || e.Args.Contains("-h"))
             {
@@ -93,27 +90,21 @@ public partial class App : Application
             _logger.Info("Creating services...");
             var settingsService = new SettingsService(_logger, customConfigPath);
             _logger.Info("SettingsService created");
-            _logger.Flush();
             
             var localizationService = new LocalizationService(_logger, language);
             _logger.Info("LocalizationService created");
-            _logger.Flush();
             
             var wtsService = new WtsSessionService(_logger);
             _logger.Info("WtsSessionService created. IsElevated: {0}", wtsService.IsElevated);
-            _logger.Flush();
             
             var windowEnumerator = new WindowEnumeratorService(_logger);
             _logger.Info("WindowEnumeratorService created");
-            _logger.Flush();
             
             var appStateService = new SessionAppStateService(wtsService, windowEnumerator, _logger);
             _logger.Info("SessionAppStateService created");
-            _logger.Flush();
             
             var commandExecutor = new CommandExecutor(_logger);
             _logger.Info("CommandExecutor created");
-            _logger.Flush();
 
             // Загрузка настроек (без прерывания, если файл отсутствует)
             _logger.Info("Loading settings...");
@@ -127,12 +118,10 @@ public partial class App : Application
             {
                 _logger.Info("Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
             }
-            _logger.Flush();
 
             // Применяем тему
             _logger.Info("Applying theme: {0}", theme);
             ApplyTheme(theme);
-            _logger.Flush();
 
             // Создаём MainViewModel
             _logger.Info("Creating MainViewModel...");
@@ -145,18 +134,15 @@ public partial class App : Application
                 settingsService,
                 _logger);
             _logger.Info("MainViewModel created successfully");
-            _logger.Flush();
 
             // Создаём MainWindow вручную с передачей ViewModel и Logger
             _logger.Info("Creating MainWindow manually with ViewModel and Logger...");
             var mainWindow = new MainWindow(mainViewModel, _logger);
             _logger.Info("MainWindow created. Handle: {0}", mainWindow != null ? "OK" : "NULL");
-            _logger.Flush();
 
             // Назначаем DataContext (уже установлен в конструкторе MainWindow, но для ясности оставим)
             _logger.Info("Verifying DataContext on MainWindow...");
             _logger.Info("DataContext type: {0}", mainWindow?.DataContext?.GetType().Name ?? "null");
-            _logger.Flush();
 
             // Подписываемся на Loaded для запуска фоновых задач
             _logger.Info("Subscribing to MainWindow.Loaded event...");
@@ -190,7 +176,6 @@ public partial class App : Application
             {
                 _logger.Error("MainWindow is null, cannot subscribe to events!");
             }
-            _logger.Flush();
 
             // Показываем окно
             _logger.Info("Calling MainWindow.Show()...");
@@ -206,7 +191,6 @@ public partial class App : Application
                 _logger.Info("  - Left: {0}, Top: {1}", mainWindow.Left, mainWindow.Top);
                 _logger.Info("  - WindowState: {0}", mainWindow.WindowState);
                 _logger.Info("  - Visibility: {0}", mainWindow.Visibility);
-                _logger.Flush();
 
                 // Проверка: если окно не видно, пробуем Activate
                 if (!mainWindow.IsVisible || mainWindow.Visibility != Visibility.Visible)
@@ -218,7 +202,6 @@ public partial class App : Application
                     mainWindow.Activate();
                     mainWindow.Focus();
                     _logger.Info("Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
-                    _logger.Flush();
                 }
 
                 MainWindow = mainWindow;
@@ -230,7 +213,6 @@ public partial class App : Application
             }
 
             _logger.Info("=== APPLICATION STARTUP COMPLETE ===");
-            _logger.Flush();
             
             if (debugMode)
             {
@@ -245,7 +227,6 @@ public partial class App : Application
             {
                 _logger.Error("Inner exception: {0}", ex.InnerException);
             }
-            _logger.Flush();
             
             Console.WriteLine($"[CONSOLE] FATAL ERROR: {ex.Message}");
             Console.WriteLine($"[CONSOLE] Stack: {ex.StackTrace}");
