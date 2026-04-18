@@ -107,114 +107,163 @@ public partial class App : Application
             _logger.Info("CommandExecutor created");
 
             // Загрузка настроек (без прерывания, если файл отсутствует)
-            _logger.Info("Loading settings...");
+            _logger.Info("[STEP] Loading settings...");
+            Console.WriteLine("[STEP] Loading settings...");
             var settings = settingsService.LoadAsync().GetAwaiter().GetResult();
             if (settings == null)
             {
-                _logger.Info("Settings file not found or invalid, using defaults.");
+                _logger.Info("[STEP] Settings file not found, creating defaults...");
+                Console.WriteLine("[STEP] Settings file not found, creating defaults...");
                 settings = new AppSettings();
+                settingsService.CreateDefaultSettings();
+                _logger.Info("[STEP] Default settings created");
+                Console.WriteLine("[STEP] Default settings created");
             }
             else
             {
-                _logger.Info("Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
+                _logger.Info("[STEP] Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
+                Console.WriteLine("[STEP] Settings loaded successfully");
             }
 
             // Применяем тему
-            _logger.Info("Applying theme: {0}", theme);
+            _logger.Info("[STEP] Applying theme: {0}", theme);
+            Console.WriteLine($"[STEP] Applying theme: {theme}");
             ApplyTheme(theme);
 
             // Создаём MainViewModel
-            _logger.Info("Creating MainViewModel...");
-            var mainViewModel = new MainViewModel(
-                wtsService,
-                appStateService,
-                commandExecutor,
-                windowEnumerator,
-                localizationService,
-                settingsService,
-                _logger);
-            _logger.Info("MainViewModel created successfully");
+            _logger.Info("[STEP] Creating MainViewModel...");
+            Console.WriteLine("[STEP] Creating MainViewModel...");
+            try
+            {
+                var mainViewModel = new MainViewModel(
+                    wtsService,
+                    appStateService,
+                    commandExecutor,
+                    windowEnumerator,
+                    localizationService,
+                    settingsService,
+                    _logger);
+                _logger.Info("[STEP] MainViewModel created successfully");
+                Console.WriteLine("[STEP] MainViewModel created successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "[STEP] FATAL: Failed to create MainViewModel");
+                Console.WriteLine($"[STEP] FATAL: Failed to create MainViewModel: {ex.Message}");
+                throw;
+            }
 
             // Создаём MainWindow вручную с передачей ViewModel и Logger
-            _logger.Info("Creating MainWindow manually with ViewModel and Logger...");
-            var mainWindow = new MainWindow(mainViewModel, _logger);
-            _logger.Info("MainWindow created. Handle: {0}", mainWindow != null ? "OK" : "NULL");
-
-            // Назначаем DataContext (уже установлен в конструкторе MainWindow, но для ясности оставим)
-            _logger.Info("Verifying DataContext on MainWindow...");
-            _logger.Info("DataContext type: {0}", mainWindow?.DataContext?.GetType().Name ?? "null");
-
-            // Подписываемся на Loaded для запуска фоновых задач
-            _logger.Info("Subscribing to MainWindow.Loaded event...");
-            if (mainWindow != null)
+            _logger.Info("[STEP] Creating MainWindow manually...");
+            Console.WriteLine("[STEP] Creating MainWindow manually...");
+            try
             {
-                mainWindow.Loaded += async (_, _) =>
+                var mainWindow = new MainWindow(mainViewModel, _logger);
+                _logger.Info("[STEP] MainWindow created. Handle: {0}", mainWindow != null ? "OK" : "NULL");
+                Console.WriteLine($"[STEP] MainWindow created: {(mainWindow != null ? "OK" : "NULL")}");
+
+                // Назначаем DataContext (уже установлен в конструкторе MainWindow, но для ясности оставим)
+                _logger.Info("[STEP] Verifying DataContext on MainWindow...");
+                Console.WriteLine("[STEP] Verifying DataContext on MainWindow...");
+                _logger.Info("[STEP] DataContext type: {0}", mainWindow?.DataContext?.GetType().Name ?? "null");
+                Console.WriteLine($"[STEP] DataContext type: {mainWindow?.DataContext?.GetType().Name ?? "null"}");
+
+                // Подписываемся на Loaded для запуска фоновых задач
+                _logger.Info("[STEP] Subscribing to MainWindow.Loaded event...");
+                Console.WriteLine("[STEP] Subscribing to MainWindow.Loaded event...");
+                if (mainWindow != null)
                 {
-                    _logger.Info("MainWindow.Loaded event fired");
-                    _logger.Info("  - IsVisible: {0}", mainWindow.IsVisible);
-                    _logger.Info("  - IsActive: {0}", mainWindow.IsActive);
-                    
-                    try
+                    mainWindow.Loaded += async (_, _) =>
                     {
-                        await mainViewModel.StartRefreshLoopAsync();
-                        _logger.Info("Refresh loop started successfully");
-                    }
-                    catch (Exception ex)
+                        _logger.Info("[STEP] MainWindow.Loaded event fired");
+                        Console.WriteLine("[STEP] MainWindow.Loaded event fired");
+                        _logger.Info("[STEP]   - IsVisible: {0}", mainWindow.IsVisible);
+                        _logger.Info("[STEP]   - IsActive: {0}", mainWindow.IsActive);
+                        Console.WriteLine($"[STEP]   - IsVisible: {mainWindow.IsVisible}");
+                        Console.WriteLine($"[STEP]   - IsActive: {mainWindow.IsActive}");
+                        
+                        try
+                        {
+                            await mainViewModel.StartRefreshLoopAsync();
+                            _logger.Info("[STEP] Refresh loop started successfully");
+                            Console.WriteLine("[STEP] Refresh loop started successfully");
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex, "[STEP] Failed to start refresh loop");
+                            Console.WriteLine($"[STEP] Failed to start refresh loop: {ex.Message}");
+                        }
+                    };
+
+                    mainWindow.Closed += (_, _) =>
                     {
-                        _logger.Error(ex, "Failed to start refresh loop");
-                    }
-                };
-
-                mainWindow.Closed += (_, _) =>
+                        _logger.Info("[STEP] MainWindow.Closed event fired");
+                        Console.WriteLine("[STEP] MainWindow.Closed event fired");
+                        mainViewModel.Unload();
+                        _logger.Info("[STEP] Application shutting down");
+                        Console.WriteLine("[STEP] Application shutting down");
+                    };
+                }
+                else
                 {
-                    _logger.Info("MainWindow.Closed event fired");
-                    mainViewModel.Unload();
-                    _logger.Info("Application shutting down");
-                };
-            }
-            else
-            {
-                _logger.Error("MainWindow is null, cannot subscribe to events!");
-            }
-
-            // Показываем окно
-            _logger.Info("Calling MainWindow.Show()...");
-            if (mainWindow != null)
-            {
-                Console.WriteLine("[CONSOLE] About to call Show()");
-                mainWindow.Show();
-                Console.WriteLine("[CONSOLE] Show() completed");
-                _logger.Info("MainWindow.Show() completed");
-                _logger.Info("  - IsVisible after Show: {0}", mainWindow.IsVisible);
-                _logger.Info("  - IsActive after Show: {0}", mainWindow.IsActive);
-                _logger.Info("  - Width: {0}, Height: {1}", mainWindow.Width, mainWindow.Height);
-                _logger.Info("  - Left: {0}, Top: {1}", mainWindow.Left, mainWindow.Top);
-                _logger.Info("  - WindowState: {0}", mainWindow.WindowState);
-                _logger.Info("  - Visibility: {0}", mainWindow.Visibility);
-
-                // Проверка: если окно не видно, пробуем Activate
-                if (!mainWindow.IsVisible || mainWindow.Visibility != Visibility.Visible)
-                {
-                    _logger.Warning("MainWindow is not visible after Show(), trying to recover...");
-                    Console.WriteLine("[CONSOLE] Window NOT visible! Attempting recovery...");
-                    mainWindow.Visibility = Visibility.Visible;
-                    mainWindow.Show();
-                    Console.WriteLine("[CONSOLE] Calling Activate()...");
-                    mainWindow.Activate();
-                    Console.WriteLine("[CONSOLE] Activate() completed");
-                    mainWindow.Focus();
-                    _logger.Info("Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
+                    _logger.Error("[STEP] MainWindow is null, cannot subscribe to events!");
+                    Console.WriteLine("[STEP] ERROR: MainWindow is null!");
                 }
 
-                MainWindow = mainWindow;
+                // Показываем окно
+                _logger.Info("[STEP] Calling MainWindow.Show()...");
+                Console.WriteLine("[STEP] Calling MainWindow.Show()...");
+                if (mainWindow != null)
+                {
+                    Console.WriteLine("[CONSOLE] About to call Show()");
+                    mainWindow.Show();
+                    Console.WriteLine("[CONSOLE] Show() completed");
+                    _logger.Info("[STEP] MainWindow.Show() completed");
+                    Console.WriteLine("[STEP] MainWindow.Show() completed");
+                    _logger.Info("[STEP]   - IsVisible after Show: {0}", mainWindow.IsVisible);
+                    _logger.Info("[STEP]   - IsActive after Show: {0}", mainWindow.IsActive);
+                    _logger.Info("[STEP]   - Width: {0}, Height: {1}", mainWindow.Width, mainWindow.Height);
+                    _logger.Info("[STEP]   - Left: {0}, Top: {1}", mainWindow.Left, mainWindow.Top);
+                    _logger.Info("[STEP]   - WindowState: {0}", mainWindow.WindowState);
+                    _logger.Info("[STEP]   - Visibility: {0}", mainWindow.Visibility);
+                    Console.WriteLine($"[STEP]   - IsVisible: {mainWindow.IsVisible}");
+                    Console.WriteLine($"[STEP]   - IsActive: {mainWindow.IsActive}");
+                    Console.WriteLine($"[STEP]   - Width: {mainWindow.Width}, Height: {mainWindow.Height}");
+                    Console.WriteLine($"[STEP]   - Visibility: {mainWindow.Visibility}");
+
+                    // Проверка: если окно не видно, пробуем Activate
+                    if (!mainWindow.IsVisible || mainWindow.Visibility != Visibility.Visible)
+                    {
+                        _logger.Warning("[STEP] MainWindow is not visible after Show(), trying to recover...");
+                        Console.WriteLine("[STEP] WARNING: Window NOT visible! Attempting recovery...");
+                        mainWindow.Visibility = Visibility.Visible;
+                        mainWindow.Show();
+                        Console.WriteLine("[STEP] Calling Activate()...");
+                        mainWindow.Activate();
+                        Console.WriteLine("[STEP] Activate() completed");
+                        mainWindow.Focus();
+                        _logger.Info("[STEP] Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
+                        Console.WriteLine($"[STEP] Recovery result. IsVisible: {mainWindow.IsVisible}");
+                    }
+
+                    MainWindow = mainWindow;
+                }
+                else
+                {
+                    _logger.Error("[STEP] MainWindow is null, cannot show window!");
+                    Console.WriteLine("[STEP] ERROR: MainWindow is null, cannot show!");
+                    throw new InvalidOperationException("MainWindow creation failed!");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                _logger.Error("MainWindow is null, cannot show window!");
-                throw new InvalidOperationException("MainWindow creation failed!");
+                _logger.Error(ex, "[STEP] FATAL: Failed to create/show MainWindow");
+                Console.WriteLine($"[STEP] FATAL: Failed to create/show MainWindow: {ex.Message}");
+                throw;
             }
 
-            _logger.Info("=== APPLICATION STARTUP COMPLETE ===");
+            _logger.Info("[STEP] === APPLICATION STARTUP COMPLETE ===");
+            Console.WriteLine("[STEP] === APPLICATION STARTUP COMPLETE ===");
             
             if (debugMode)
             {
