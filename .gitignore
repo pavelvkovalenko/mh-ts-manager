@@ -1,4 +1,33 @@
-```
-# SSH
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+Visual Studio cache/options
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+Windows image file caches
+Thumbs.db
+ehthumbs.db
+Folder config file
+Desktop.ini
+Recycle Bin used on file shares
+$RECYCLE.BIN/
+SSH keys and known hosts (local only)
 .ssh/
-```
+.pub
+!.pub.*
+Logs
+*.log
