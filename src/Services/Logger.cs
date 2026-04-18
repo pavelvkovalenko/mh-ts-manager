@@ -47,9 +47,9 @@ public sealed class Logger : IDisposable
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "mh-ts-manager",
                     "logs");
-                _logger.DebugStatic("[Logger.Instance] Creating instance, path: {0}", logPath);
+                Console.WriteLine($"[Logger.Instance] Creating instance, path: {logPath}");
                 Initialize(logPath);
-                _logger.DebugStatic("[Logger.Instance] Instance created successfully");
+                Console.WriteLine("[Logger.Instance] Instance created successfully");
             }
             return _instance!;
         }
