@@ -27,8 +27,7 @@ public partial class App : Application
     /// </summary>
     protected override void OnStartup(StartupEventArgs e)
     {
-        // НЕ вызываем base.OnStartup() чтобы избежать дублирования с StartupUri
-        // base.OnStartup(e);
+        base.OnStartup(e);
 
         try
         {
@@ -112,9 +111,11 @@ public partial class App : Application
             _logger.Info("Applying theme: {0}", theme);
             ApplyTheme(theme);
 
-            // Получаем главное окно из Current.MainWindow (создаётся через StartupUri)
-            _logger.Info("Waiting for MainWindow to be created via StartupUri...");
-            
+            // Создаём MainWindow вручную
+            _logger.Info("Creating MainWindow manually...");
+            var mainWindow = new MainWindow();
+            _logger.Info("MainWindow created. Handle: {0}", mainWindow != null ? "OK" : "NULL");
+
             // Создаём MainViewModel и назначаем его DataContext окна
             _logger.Info("Creating MainViewModel...");
             var mainViewModel = new MainViewModel(
@@ -127,45 +128,59 @@ public partial class App : Application
                 _logger);
             _logger.Info("MainViewModel created successfully");
 
-            // Назначаем DataContext после создания окна
+            // Назначаем DataContext
             _logger.Info("Assigning DataContext to MainWindow...");
-            if (MainWindow != null)
-            {
-                MainWindow.DataContext = mainViewModel;
-                _logger.Info("DataContext assigned successfully. MainWindow type: {0}", MainWindow.GetType().Name);
-                _logger.Info("MainWindow.IsVisible: {0}, MainWindow.IsActive: {1}", MainWindow.IsVisible, MainWindow.IsActive);
-                
-                // Подписываемся на Loaded для запуска фоновых задач
-                _logger.Info("Subscribing to MainWindow.Loaded event...");
-                MainWindow.Loaded += async (_, _) =>
-                {
-                    _logger.Info("MainWindow.Loaded event fired");
-                    _logger.Info("  - IsVisible: {0}", MainWindow.IsVisible);
-                    _logger.Info("  - IsActive: {0}", MainWindow.IsActive);
-                    
-                    try
-                    {
-                        await mainViewModel.StartRefreshLoopAsync();
-                        _logger.Info("Refresh loop started successfully");
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error(ex, "Failed to start refresh loop");
-                    }
-                };
+            mainWindow.DataContext = mainViewModel;
+            _logger.Info("DataContext assigned successfully");
 
-                MainWindow.Closed += (_, _) =>
-                {
-                    _logger.Info("MainWindow.Closed event fired");
-                    mainViewModel.Unload();
-                    _logger.Info("Application shutting down");
-                };
-            }
-            else
+            // Подписываемся на Loaded для запуска фоновых задач
+            _logger.Info("Subscribing to MainWindow.Loaded event...");
+            mainWindow.Loaded += async (_, _) =>
             {
-                _logger.Error("MainWindow is NULL after StartupUri!");
-                throw new InvalidOperationException("MainWindow is null after StartupUri");
+                _logger.Info("MainWindow.Loaded event fired");
+                _logger.Info("  - IsVisible: {0}", mainWindow.IsVisible);
+                _logger.Info("  - IsActive: {0}", mainWindow.IsActive);
+                
+                try
+                {
+                    await mainViewModel.StartRefreshLoopAsync();
+                    _logger.Info("Refresh loop started successfully");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to start refresh loop");
+                }
+            };
+
+            mainWindow.Closed += (_, _) =>
+            {
+                _logger.Info("MainWindow.Closed event fired");
+                mainViewModel.Unload();
+                _logger.Info("Application shutting down");
+            };
+
+            // Показываем окно
+            _logger.Info("Calling MainWindow.Show()...");
+            mainWindow.Show();
+            _logger.Info("MainWindow.Show() completed");
+            _logger.Info("  - IsVisible after Show: {0}", mainWindow.IsVisible);
+            _logger.Info("  - IsActive after Show: {0}", mainWindow.IsActive);
+            _logger.Info("  - Width: {0}, Height: {1}", mainWindow.Width, mainWindow.Height);
+            _logger.Info("  - Left: {0}, Top: {1}", mainWindow.Left, mainWindow.Top);
+            _logger.Info("  - WindowState: {0}", mainWindow.WindowState);
+            _logger.Info("  - Visibility: {0}", mainWindow.Visibility);
+
+            // Проверка: если окно не видно, пробуем Activate
+            if (!mainWindow.IsVisible || mainWindow.Visibility != Visibility.Visible)
+            {
+                _logger.Warning("MainWindow is not visible after Show(), trying to recover...");
+                mainWindow.Visibility = Visibility.Visible;
+                mainWindow.Show();
+                mainWindow.Activate();
+                _logger.Info("Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
             }
+
+            MainWindow = mainWindow;
 
             _logger.Info("=== APPLICATION STARTUP COMPLETE ===");
         }
