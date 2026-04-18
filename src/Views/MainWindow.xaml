@@ -12,6 +12,8 @@
     <Window.Resources>
         <!-- Конвертер для цвета статуса -->
         <converters:StringToColorConverter x:Key="StatusToColorConverter"/>
+        <!-- Конвертер Boolean to Visibility -->
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
 
     <Grid>
@@ -35,7 +37,9 @@
                     <TextBlock Text="{Binding UsersTitle}" Style="{StaticResource TitleTextStyle}"
                                Margin="0,0,8,0"/>
                     <TextBlock x:Name="LoadingIndicator" Text="⟳" Foreground="{StaticResource AccentBrush}"
-                               FontSize="16" Visibility="Collapsed" Margin="8,0,0,0">
+                               FontSize="16" 
+                               Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+                               Margin="8,0,0,0">
                         <TextBlock.RenderTransform>
                             <RotateTransform x:Name="LoadingRotation" Angle="0" CenterX="8" CenterY="8"/>
                         </TextBlock.RenderTransform>

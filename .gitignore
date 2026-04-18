@@ -1,1 +1,1 @@
-Nothing should be ignored based on the provided file changes. The only modified file is a source code file (.cs), which should not be added to .gitignore.
+Nothing needs to be added to the .gitignore file since the modified files (MainWindow.xaml and MainWindow.xaml.cs) are source code files that should be tracked in version control.

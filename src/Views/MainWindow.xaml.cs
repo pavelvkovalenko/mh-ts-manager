@@ -43,20 +43,6 @@ namespace MhTsManager.Views
                 loadingAnimation.Begin();
             }
 
-            // Обработка изменения IsLoading для индикатора
-            _viewModel.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(MainViewModel.IsLoading))
-                {
-                    // Захватываем локальную копию ПЕРЕД вложенной лямбдой для безопасности замыкания
-                    var viewModel = _viewModel;
-                    Dispatcher.Invoke(() =>
-                    {
-                        LoadingIndicator.Visibility = viewModel.IsLoading ? Visibility.Visible : Visibility.Collapsed;
-                    });
-                }
-            };
-
             // Убеждаемся, что окно видимо и активно
             this.ShowActivated = true;
             this.Visibility = Visibility.Visible;
