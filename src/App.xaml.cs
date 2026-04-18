@@ -125,10 +125,24 @@ public partial class App : Application
                 Console.WriteLine("[STEP] Settings loaded successfully");
             }
 
+            // Проверка после загрузки настроек
+            _logger.Info("[STEP] Post-settings check: settings object is null? {0}", settings == null);
+            Console.WriteLine($"[STEP] Post-settings check: settings is null? {settings == null}");
+
             // Применяем тему
             _logger.Info("[STEP] Applying theme: {0}", theme);
             Console.WriteLine($"[STEP] Applying theme: {theme}");
-            ApplyTheme(theme);
+            try
+            {
+                ApplyTheme(theme);
+                _logger.Info("[STEP] Theme applied successfully");
+                Console.WriteLine("[STEP] Theme applied successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "[STEP] Failed to apply theme");
+                Console.WriteLine($"[STEP] Failed to apply theme: {ex.Message}");
+            }
 
             // Создаём MainViewModel
             _logger.Info("[STEP] Creating MainViewModel...");
