@@ -73,15 +73,15 @@ public partial class App : Application
         // Загрузка настроек
         var settings = settingsService.LoadAsync().GetAwaiter().GetResult();
 
-        // Применяем тему
-        ApplyTheme(theme);
-
-        // Загружаем Fluent стили
+        // Загружаем Fluent стили ДО создания окна
         var fluentStylesDict = new ResourceDictionary
         {
             Source = new Uri("pack://application:,,,/Views/Styles/FluentStyles.xaml")
         };
         Resources.MergedDictionaries.Add(fluentStylesDict);
+
+        // Применяем тему
+        ApplyTheme(theme);
 
         // Создаём MainViewModel
         var mainViewModel = new MainViewModel(
@@ -96,13 +96,26 @@ public partial class App : Application
         // Создаём и показываем главное окно
         var mainWindow = new MainWindow(mainViewModel, _logger);
         
-        // Принудительно делаем окно видимым (защита от невидимости)
+        // Принудительно делаем окно видимым и активным (защита от невидимости)
+        mainWindow.ShowActivated = true;
+        mainWindow.Topmost = false;
+        mainWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        
+        // Гарантируем корректные размеры перед показом
+        if (mainWindow.Width < mainWindow.MinWidth)
+            mainWindow.Width = mainWindow.MinWidth;
+        if (mainWindow.Height < mainWindow.MinHeight)
+            mainWindow.Height = mainWindow.MinHeight;
+        
         mainWindow.Visibility = Visibility.Visible;
         mainWindow.Show();
         mainWindow.Activate();
         mainWindow.Focus();
         
-        _logger.Info("MainWindow created and shown. Handle: {0}", new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
+        // Дополнительная проверка: если окно всё ещё не видно, перемещаем его в центр
+        var helper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
+        _logger.Info("MainWindow created and shown. Handle: {0}, Visible: {1}, Width: {2}, Height: {3}", 
+            helper.Handle, mainWindow.IsVisible, mainWindow.Width, mainWindow.Height);
 
         // Запускаем автообновление
         mainWindow.Loaded += async (_, _) =>
