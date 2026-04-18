@@ -62,30 +62,19 @@ namespace MhTsManager.Views
                 }
 
                 // Запуск анимации загрузки
-                _logger.Info("Step 5: Looking for LoadingAnimation resource...");
-                var loadingAnimation = TryFindResource("LoadingAnimation") as Storyboard;
-                _logger.Info("  - LoadingAnimation found: {0}", loadingAnimation != null ? "YES" : "NO");
+// Removed loadingAnimation usage
+// Removed loadingAnimation usage
+// Removed loadingAnimation usage
                 _logger.Info("  - LoadingIndicator control: {0}", LoadingIndicator != null ? "FOUND" : "NULL");
                 
-                if (loadingAnimation != null && LoadingIndicator != null)
+// Removed loadingAnimation usage
                 {
-                    _logger.Info("Step 5a: Setting up rotation animation...");
-                    var rotateTransform = LoadingIndicator.RenderTransform as RotateTransform;
-                    if (rotateTransform == null)
-                    {
-                        _logger.Info("  - Creating new RotateTransform...");
-                        rotateTransform = new RotateTransform(0);
-                        LoadingIndicator.RenderTransform = rotateTransform;
-                    }
-                    Storyboard.SetTarget(loadingAnimation, LoadingIndicator);
-                    _logger.Info("  - Starting animation...");
-                    loadingAnimation.Begin();
-                    _logger.Info("Step 5a COMPLETE: Loading animation started successfully");
+                    _logger.Info("Step 5a: Creating and starting rotation animation programmatically...\n                    var rotateTransform = LoadingIndicator.RenderTransform as RotateTransform;\n                    if (rotateTransform == null)\n                    {\n                        rotateTransform = new RotateTransform(0);\n                        LoadingIndicator.RenderTransform = rotateTransform;\n                    }\n\n                    // Create animation programmatically to avoid ReadOnly exception\n                    var rotationAnimation = new DoubleAnimation\n                    {\n                        From = 0,\n                        To = 360,\n                        Duration = TimeSpan.FromSeconds(1.5),\n                        RepeatBehavior = RepeatBehavior.Forever,\n                        EasingFunction = new LinearEasing()\n                    };\n\n                    rotateTransform.BeginAnimation(RotateTransform.AngleProperty, rotationAnimation);\n                    _logger.Info(\ Step 5a COMPLETE: Programmatic loading animation started successfully\)");
                 }
                 else
                 {
-                    _logger.Warning("Step 5 SKIPPED: LoadingAnimation resource not found or LoadingIndicator is null. Animation: {0}, Indicator: {1}",
-                        loadingAnimation == null ? "null" : "found",
+// Removed loadingAnimation usage
+// Removed loadingAnimation usage
                         LoadingIndicator == null ? "null" : "found");
                 }
 
@@ -208,3 +197,4 @@ namespace MhTsManager.Views
         }
     }
 }
+
