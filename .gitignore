@@ -1,1 +1,25 @@
-Nothing needs to be added to the .gitignore file since the modified files (MainWindow.xaml and MainWindow.xaml.cs) are source code files that should be tracked in version control.
+```
+# Build artifacts
+*.obj
+*.exe
+*.dll
+*.pdb
+*.userprefs
+*.cache
+*.log
+
+# Dependencies
+packages/
+bin/
+obj/
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vs/
+.vshost.exe
+.user
+```

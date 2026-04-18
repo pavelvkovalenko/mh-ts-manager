@@ -67,7 +67,12 @@ public sealed partial class MainViewModel : ObservableObject
         _settingsService = settingsService;
         _logger = logger;
 
+        _logger.Info("=== MAINVIEWMODEL CONSTRUCTOR BEGIN ===");
+        _logger.Info("Services injected successfully");
+        
         InitializeDisplayValues();
+        _logger.Info("InitializeDisplayValues completed");
+        _logger.Info("MainViewModel constructor completed successfully");
     }
 
     /// <summary>
@@ -75,14 +80,22 @@ public sealed partial class MainViewModel : ObservableObject
     /// </summary>
     private void InitializeDisplayValues()
     {
+        _logger.Info("InitializeDisplayValues: Starting...");
         WindowTitle = _localizationService.GetString("App.WindowTitle");
+        _logger.Info("WindowTitle set to: {0}", WindowTitle);
         UsersTitle = _localizationService.GetString("Toolbar.UsersTitle");
+        _logger.Info("UsersTitle set to: {0}", UsersTitle);
         AdminModeTooltip = _localizationService.GetString("Toolbar.AdminMode.Locked");
+        _logger.Info("AdminModeTooltip (initial) set to: {0}", AdminModeTooltip);
         IsElevated = _wtsService.IsElevated;
+        _logger.Info("IsElevated: {0}", IsElevated);
         AdminModeIcon = IsElevated ? "\uD83D\uDD13" : "\uD83D\uDD12"; // 🔓 или 🔒
+        _logger.Info("AdminModeIcon set to: {0}", AdminModeIcon);
         AdminModeTooltip = IsElevated
             ? _localizationService.GetString("Toolbar.AdminMode.Active")
             : _localizationService.GetString("Toolbar.AdminMode.Locked");
+        _logger.Info("AdminModeTooltip (final) set to: {0}", AdminModeTooltip);
+        _logger.Info("InitializeDisplayValues: Complete");
     }
 
     /// <summary>
@@ -90,9 +103,12 @@ public sealed partial class MainViewModel : ObservableObject
     /// </summary>
     public async Task StartRefreshLoopAsync()
     {
+        _logger.Info("StartRefreshLoopAsync: Starting...");
         _refreshCts = new CancellationTokenSource();
+        _logger.Info("StartRefreshLoopAsync: Calling initial RefreshSessionsAsync...");
         await RefreshSessionsAsync(); // Первоначальная загрузка
 
+        _logger.Info("StartRefreshLoopAsync: Starting background refresh task...");
         _ = Task.Run(async () =>
         {
             while (!_refreshCts.Token.IsCancellationRequested)
@@ -104,6 +120,7 @@ public sealed partial class MainViewModel : ObservableObject
                 }
                 catch (OperationCanceledException)
                 {
+                    _logger.Info("StartRefreshLoopAsync: Operation cancelled, exiting loop");
                     break;
                 }
                 catch (Exception ex)
@@ -111,7 +128,9 @@ public sealed partial class MainViewModel : ObservableObject
                     _logger.Error(ex, "Error in refresh loop");
                 }
             }
+            _logger.Info("StartRefreshLoopAsync: Background task completed");
         }, _refreshCts.Token);
+        _logger.Info("StartRefreshLoopAsync: Completed");
     }
 
     /// <summary>
@@ -130,14 +149,19 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     public async Task RefreshSessionsAsync()
     {
-        if (IsLoading) return;
+        if (IsLoading) 
+        {
+            _logger.Debug("RefreshSessionsAsync: Already loading, skipping");
+            return;
+        }
 
         try
         {
             IsLoading = true;
-            _logger.Debug("Refreshing sessions...");
+            _logger.Debug("RefreshSessionsAsync: Starting refresh...");
 
             var newSessions = await _wtsService.EnumerateSessionsAsync(_refreshCts?.Token ?? CancellationToken.None);
+            _logger.Debug("RefreshSessionsAsync: Enumerated {0} sessions", newSessions.Count);
 
             // Обновляем AppState для каждой сессии
             var updatedSessions = new List<SessionInfo>();
@@ -146,15 +170,16 @@ public sealed partial class MainViewModel : ObservableObject
                 var updated = await _appStateService.UpdateSessionAppStateAsync(s, _refreshCts?.Token ?? CancellationToken.None);
                 updatedSessions.Add(updated);
             }
+            _logger.Debug("RefreshSessionsAsync: Updated {0} sessions with app state", updatedSessions.Count);
 
             // Синхронизируем коллекцию ViewModel'ов
             UpdateSessionCollection(updatedSessions);
 
-            _logger.Debug("Sessions refresh completed. Count: {0}", updatedSessions.Count);
+            _logger.Debug("RefreshSessionsAsync: Completed. Total sessions: {0}", updatedSessions.Count);
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "Failed to refresh sessions");
+            _logger.Error(ex, "RefreshSessionsAsync: Failed to refresh sessions");
         }
         finally
         {
