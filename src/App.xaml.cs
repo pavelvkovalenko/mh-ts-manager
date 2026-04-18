@@ -133,9 +133,10 @@ public partial class App : Application
             // Создаём MainViewModel
             _logger.Info("[STEP] Creating MainViewModel...");
             Console.WriteLine("[STEP] Creating MainViewModel...");
+            MainViewModel? mainViewModel = null;
             try
             {
-                var mainViewModel = new MainViewModel(
+                mainViewModel = new MainViewModel(
                     wtsService,
                     appStateService,
                     commandExecutor,

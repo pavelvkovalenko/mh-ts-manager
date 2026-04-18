@@ -218,7 +218,7 @@ public sealed class SettingsService : ISettingsService
     /// <summary>
     /// Создать настройки по умолчанию.
     /// </summary>
-    private static AppSettings CreateDefaultSettings()
+    public static AppSettings CreateDefaultSettings()
     {
         // Добавлено подробное логирование для диагностики отсутствия окна
         Logger.DebugStatic("[SettingsService] CreateDefaultSettings: Creating default settings...");
