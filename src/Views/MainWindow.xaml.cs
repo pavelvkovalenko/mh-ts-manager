@@ -14,7 +14,9 @@ namespace MhTsManager.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        // Инициализируется в конструкторе, оператор ! подавляет ложное предупреждение CS8602
         private readonly MainViewModel _viewModel = null!;
+        // Инициализируется в конструкторе, оператор ! подавляет ложное предупреждение CS8602
         private readonly Logger _logger = null!;
 
         public MainWindow(MainViewModel viewModel, Logger logger)
