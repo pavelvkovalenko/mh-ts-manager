@@ -152,6 +152,21 @@ public sealed class Logger : IDisposable
         {
             try
             {
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                var levelStr = level.ToString().ToUpperInvariant();
+                var formattedMessage = args != null && args.Length > 0
+                    ? string.Format(message, args)
+                    : message;
+
+                var logLine = $"[{timestamp}] [{levelStr}] {formattedMessage}";
+
+                // Вывод в консоль в режиме отладки
+                if (_isDebug)
+                {
+                    Console.WriteLine(logLine);
+                }
+
+                // Запись в файл
                 var logFile = GetOrCreateLogFile();
                 if (logFile == null) return;
 
@@ -163,20 +178,16 @@ public sealed class Logger : IDisposable
                     if (logFile == null) return;
                 }
 
-                var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
-                var levelStr = level.ToString().ToUpperInvariant();
-                var formattedMessage = args != null && args.Length > 0
-                    ? string.Format(message, args)
-                    : message;
-
-                var logLine = $"[{timestamp}] [{levelStr}] {formattedMessage}{Environment.NewLine}";
-
                 // UTF-8 без BOM
-                File.AppendAllText(logFile, logLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                File.AppendAllText(logFile, logLine + Environment.NewLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
             }
-            catch
+            catch (Exception ex)
             {
                 // Не допускаем падения приложения из-за ошибок логирования
+                if (_isDebug)
+                {
+                    Console.WriteLine($"[LOGGER ERROR] {ex.Message}");
+                }
             }
         }
     }
