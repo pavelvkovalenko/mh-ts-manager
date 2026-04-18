@@ -216,12 +216,12 @@ public sealed class SettingsService : ISettingsService
     }
 
     /// <summary>
-    /// Создать настройки по умолчанию.
+    /// Создать настройки по умолчанию и сохранить их в файл.
     /// </summary>
     public static AppSettings CreateDefaultSettings()
     {
-        // Добавлено подробное логирование для диагностики отсутствия окна
-        Logger.DebugStatic("[SettingsService] CreateDefaultSettings: Creating default settings...");
+        var logger = Logger.Instance;
+        logger.Debug("[SettingsService] CreateDefaultSettings: Creating default settings...");
         
         var defaultSettings = new AppSettings
         {
@@ -247,7 +247,8 @@ public sealed class SettingsService : ISettingsService
             }
         };
         
-        Logger.DebugStatic($"[SettingsService] CreateDefaultSettings: Default settings created. JSON: {System.Text.Json.JsonSerializer.Serialize(defaultSettings)}");
+        var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings);
+        logger.Debug($"[SettingsService] CreateDefaultSettings: Default settings created. JSON: {json}");
         
         return defaultSettings;
     }
