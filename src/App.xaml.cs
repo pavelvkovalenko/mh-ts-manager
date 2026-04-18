@@ -134,52 +134,67 @@ public partial class App : Application
 
             // Подписываемся на Loaded для запуска фоновых задач
             _logger.Info("Subscribing to MainWindow.Loaded event...");
-            mainWindow.Loaded += async (_, _) =>
+            if (mainWindow != null)
             {
-                _logger.Info("MainWindow.Loaded event fired");
-                _logger.Info("  - IsVisible: {0}", mainWindow.IsVisible);
-                _logger.Info("  - IsActive: {0}", mainWindow.IsActive);
-                
-                try
+                mainWindow.Loaded += async (_, _) =>
                 {
-                    await mainViewModel.StartRefreshLoopAsync();
-                    _logger.Info("Refresh loop started successfully");
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex, "Failed to start refresh loop");
-                }
-            };
+                    _logger.Info("MainWindow.Loaded event fired");
+                    _logger.Info("  - IsVisible: {0}", mainWindow.IsVisible);
+                    _logger.Info("  - IsActive: {0}", mainWindow.IsActive);
+                    
+                    try
+                    {
+                        await mainViewModel.StartRefreshLoopAsync();
+                        _logger.Info("Refresh loop started successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error(ex, "Failed to start refresh loop");
+                    }
+                };
 
-            mainWindow.Closed += (_, _) =>
+                mainWindow.Closed += (_, _) =>
+                {
+                    _logger.Info("MainWindow.Closed event fired");
+                    mainViewModel.Unload();
+                    _logger.Info("Application shutting down");
+                };
+            }
+            else
             {
-                _logger.Info("MainWindow.Closed event fired");
-                mainViewModel.Unload();
-                _logger.Info("Application shutting down");
-            };
+                _logger.Error("MainWindow is null, cannot subscribe to events!");
+            }
 
             // Показываем окно
             _logger.Info("Calling MainWindow.Show()...");
-            mainWindow.Show();
-            _logger.Info("MainWindow.Show() completed");
-            _logger.Info("  - IsVisible after Show: {0}", mainWindow.IsVisible);
-            _logger.Info("  - IsActive after Show: {0}", mainWindow.IsActive);
-            _logger.Info("  - Width: {0}, Height: {1}", mainWindow.Width, mainWindow.Height);
-            _logger.Info("  - Left: {0}, Top: {1}", mainWindow.Left, mainWindow.Top);
-            _logger.Info("  - WindowState: {0}", mainWindow.WindowState);
-            _logger.Info("  - Visibility: {0}", mainWindow.Visibility);
-
-            // Проверка: если окно не видно, пробуем Activate
-            if (!mainWindow.IsVisible || mainWindow.Visibility != Visibility.Visible)
+            if (mainWindow != null)
             {
-                _logger.Warning("MainWindow is not visible after Show(), trying to recover...");
-                mainWindow.Visibility = Visibility.Visible;
                 mainWindow.Show();
-                mainWindow.Activate();
-                _logger.Info("Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
-            }
+                _logger.Info("MainWindow.Show() completed");
+                _logger.Info("  - IsVisible after Show: {0}", mainWindow.IsVisible);
+                _logger.Info("  - IsActive after Show: {0}", mainWindow.IsActive);
+                _logger.Info("  - Width: {0}, Height: {1}", mainWindow.Width, mainWindow.Height);
+                _logger.Info("  - Left: {0}, Top: {1}", mainWindow.Left, mainWindow.Top);
+                _logger.Info("  - WindowState: {0}", mainWindow.WindowState);
+                _logger.Info("  - Visibility: {0}", mainWindow.Visibility);
 
-            MainWindow = mainWindow;
+                // Проверка: если окно не видно, пробуем Activate
+                if (!mainWindow.IsVisible || mainWindow.Visibility != Visibility.Visible)
+                {
+                    _logger.Warning("MainWindow is not visible after Show(), trying to recover...");
+                    mainWindow.Visibility = Visibility.Visible;
+                    mainWindow.Show();
+                    mainWindow.Activate();
+                    _logger.Info("Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
+                }
+
+                MainWindow = mainWindow;
+            }
+            else
+            {
+                _logger.Error("MainWindow is null, cannot show window!");
+                throw new InvalidOperationException("MainWindow creation failed!");
+            }
 
             _logger.Info("=== APPLICATION STARTUP COMPLETE ===");
         }
