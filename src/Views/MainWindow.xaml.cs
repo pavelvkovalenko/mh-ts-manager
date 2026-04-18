@@ -53,7 +53,7 @@ namespace MhTsManager.Views
                 }
                 else
                 {
-                    _logger.Warn("LoadingAnimation resource not found or LoadingIndicator is null");
+                    _logger.Warning("LoadingAnimation resource not found or LoadingIndicator is null");
                 }
 
                 // Убеждаемся, что окно видимо и активно
