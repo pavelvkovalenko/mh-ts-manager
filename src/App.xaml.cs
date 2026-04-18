@@ -130,7 +130,7 @@ public partial class App : Application
 
             // Назначаем DataContext (уже установлен в конструкторе MainWindow, но для ясности оставим)
             _logger.Info("Verifying DataContext on MainWindow...");
-            _logger.Info("DataContext type: {0}", mainWindow.DataContext?.GetType().Name ?? "null");
+            _logger.Info("DataContext type: {0}", mainWindow?.DataContext?.GetType().Name ?? "null");
 
             // Подписываемся на Loaded для запуска фоновых задач
             _logger.Info("Subscribing to MainWindow.Loaded event...");
