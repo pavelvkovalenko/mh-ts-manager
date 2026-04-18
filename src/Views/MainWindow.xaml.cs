@@ -48,10 +48,10 @@ namespace MhTsManager.Views
             {
                 if (e.PropertyName == nameof(MainViewModel.IsLoading))
                 {
+                    // Захватываем локальную копию ПЕРЕД вложенной лямбдой для безопасности замыкания
+                    var viewModel = _viewModel;
                     Dispatcher.Invoke(() =>
                     {
-                        // Захватываем локальную копию для безопасного использования в замыкании
-                        var viewModel = _viewModel;
                         LoadingIndicator.Visibility = viewModel.IsLoading ? Visibility.Visible : Visibility.Collapsed;
                     });
                 }
