@@ -222,9 +222,7 @@ public sealed class SettingsService : ISettingsService
     {
         try
         {
-            var logger = Logger.Instance;
             Console.WriteLine("[CONSOLE] [SettingsService] CreateDefaultSettings: START");
-            logger.Debug("[SettingsService] CreateDefaultSettings: Creating default settings...");
             
             var defaultSettings = new AppSettings
             {
@@ -251,7 +249,6 @@ public sealed class SettingsService : ISettingsService
             };
             
             var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings);
-            logger.Debug($"[SettingsService] CreateDefaultSettings: Default settings created. JSON: {json}");
             Console.WriteLine($"[CONSOLE] [SettingsService] JSON serialized successfully, length: {json.Length}");
             
             // Попытка записать файл немедленно для диагностики
@@ -261,7 +258,6 @@ public sealed class SettingsService : ISettingsService
             var settingsFile = Path.Combine(settingsDir, "settings.json");
             
             Console.WriteLine($"[CONSOLE] [SettingsService] Attempting to write file: {settingsFile}");
-            logger.Debug($"[SettingsService] Attempting to write settings file: {settingsFile}");
             
             if (!Directory.Exists(settingsDir))
             {
@@ -271,7 +267,6 @@ public sealed class SettingsService : ISettingsService
             
             File.WriteAllText(settingsFile, json);
             Console.WriteLine($"[CONSOLE] [SettingsService] File written successfully!");
-            logger.Debug("[SettingsService] Settings file written successfully");
             
             Console.WriteLine("[CONSOLE] [SettingsService] CreateDefaultSettings: END");
             return defaultSettings;
