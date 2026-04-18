@@ -220,37 +220,72 @@ public sealed class SettingsService : ISettingsService
     /// </summary>
     public static AppSettings CreateDefaultSettings()
     {
-        var logger = Logger.Instance;
-        logger.Debug("[SettingsService] CreateDefaultSettings: Creating default settings...");
-        
-        var defaultSettings = new AppSettings
+        try
         {
-            General = new GeneralSettings
+            var logger = Logger.Instance;
+            Console.WriteLine("[CONSOLE] [SettingsService] CreateDefaultSettings: START");
+            logger.Debug("[SettingsService] CreateDefaultSettings: Creating default settings...");
+            
+            var defaultSettings = new AppSettings
             {
-                Language = "system",
-                Theme = "system",
-                AutoRefreshInterval = 5,
-                ExpandAppsByDefault = false,
-            },
-            Ui = new UiSettings
-            {
-                Sessions = new SessionsUiSettings
+                General = new GeneralSettings
                 {
-                    Columns = new ColumnsSettings()
+                    Language = "system",
+                    Theme = "system",
+                    AutoRefreshInterval = 5,
+                    ExpandAppsByDefault = false,
+                },
+                Ui = new UiSettings
+                {
+                    Sessions = new SessionsUiSettings
+                    {
+                        Columns = new ColumnsSettings()
+                    }
+                },
+                Advanced = new AdvancedSettings
+                {
+                    EnableDebugLogging = false,
+                    LogRetentionDays = 7,
+                    ConfirmDangerousActions = true,
                 }
-            },
-            Advanced = new AdvancedSettings
+            };
+            
+            var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings);
+            logger.Debug($"[SettingsService] CreateDefaultSettings: Default settings created. JSON: {json}");
+            Console.WriteLine($"[CONSOLE] [SettingsService] JSON serialized successfully, length: {json.Length}");
+            
+            // Попытка записать файл немедленно для диагностики
+            var settingsDir = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "mh-ts-manager");
+            var settingsFile = Path.Combine(settingsDir, "settings.json");
+            
+            Console.WriteLine($"[CONSOLE] [SettingsService] Attempting to write file: {settingsFile}");
+            logger.Debug($"[SettingsService] Attempting to write settings file: {settingsFile}");
+            
+            if (!Directory.Exists(settingsDir))
             {
-                EnableDebugLogging = false,
-                LogRetentionDays = 7,
-                ConfirmDangerousActions = true,
+                Console.WriteLine($"[CONSOLE] [SettingsService] Creating directory: {settingsDir}");
+                Directory.CreateDirectory(settingsDir);
             }
-        };
-        
-        var json = System.Text.Json.JsonSerializer.Serialize(defaultSettings);
-        logger.Debug($"[SettingsService] CreateDefaultSettings: Default settings created. JSON: {json}");
-        
-        return defaultSettings;
+            
+            File.WriteAllText(settingsFile, json);
+            Console.WriteLine($"[CONSOLE] [SettingsService] File written successfully!");
+            logger.Debug("[SettingsService] Settings file written successfully");
+            
+            Console.WriteLine("[CONSOLE] [SettingsService] CreateDefaultSettings: END");
+            return defaultSettings;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[CONSOLE] [SettingsService] FATAL ERROR in CreateDefaultSettings: {ex.GetType().Name}: {ex.Message}");
+            Console.WriteLine($"[CONSOLE] [SettingsService] StackTrace: {ex.StackTrace}");
+            if (ex.InnerException != null)
+            {
+                Console.WriteLine($"[CONSOLE] [SettingsService] InnerException: {ex.InnerException.GetType().Name}: {ex.InnerException.Message}");
+            }
+            throw;
+        }
     }
 }
 }
