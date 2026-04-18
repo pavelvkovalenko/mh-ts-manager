@@ -111,12 +111,7 @@ public partial class App : Application
             _logger.Info("Applying theme: {0}", theme);
             ApplyTheme(theme);
 
-            // Создаём MainWindow вручную
-            _logger.Info("Creating MainWindow manually...");
-            var mainWindow = new MainWindow();
-            _logger.Info("MainWindow created. Handle: {0}", mainWindow != null ? "OK" : "NULL");
-
-            // Создаём MainViewModel и назначаем его DataContext окна
+            // Создаём MainViewModel
             _logger.Info("Creating MainViewModel...");
             var mainViewModel = new MainViewModel(
                 wtsService,
@@ -128,10 +123,14 @@ public partial class App : Application
                 _logger);
             _logger.Info("MainViewModel created successfully");
 
-            // Назначаем DataContext
-            _logger.Info("Assigning DataContext to MainWindow...");
-            mainWindow.DataContext = mainViewModel;
-            _logger.Info("DataContext assigned successfully");
+            // Создаём MainWindow вручную с передачей ViewModel и Logger
+            _logger.Info("Creating MainWindow manually with ViewModel and Logger...");
+            var mainWindow = new MainWindow(mainViewModel, _logger);
+            _logger.Info("MainWindow created. Handle: {0}", mainWindow != null ? "OK" : "NULL");
+
+            // Назначаем DataContext (уже установлен в конструкторе MainWindow, но для ясности оставим)
+            _logger.Info("Verifying DataContext on MainWindow...");
+            _logger.Info("DataContext type: {0}", mainWindow.DataContext?.GetType().Name ?? "null");
 
             // Подписываемся на Loaded для запуска фоновых задач
             _logger.Info("Subscribing to MainWindow.Loaded event...");
