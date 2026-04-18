@@ -21,33 +21,51 @@ namespace MhTsManager.Views
 
         public MainWindow(MainViewModel viewModel, Logger logger)
         {
-            InitializeComponent();
-            _viewModel = viewModel;
             _logger = logger;
-            DataContext = _viewModel;
-
-            // Привязка Title к ViewModel
-            SetBinding(TitleProperty, new Binding("WindowTitle"));
-
-            // Запуск анимации загрузки
-            var loadingAnimation = TryFindResource("LoadingAnimation") as Storyboard;
-            if (loadingAnimation != null && LoadingIndicator != null)
+            _logger.Info("MainWindow constructor started");
+            
+            try
             {
-                var rotateTransform = LoadingIndicator.RenderTransform as RotateTransform;
-                if (rotateTransform == null)
+                InitializeComponent();
+                _logger.Info("InitializeComponent completed");
+                
+                _viewModel = viewModel;
+                DataContext = _viewModel;
+                _logger.Info("DataContext set to MainViewModel");
+
+                // Привязка Title к ViewModel
+                SetBinding(TitleProperty, new Binding("WindowTitle"));
+                _logger.Info("Title binding established");
+
+                // Запуск анимации загрузки
+                var loadingAnimation = TryFindResource("LoadingAnimation") as Storyboard;
+                if (loadingAnimation != null && LoadingIndicator != null)
                 {
-                    rotateTransform = new RotateTransform(0);
-                    LoadingIndicator.RenderTransform = rotateTransform;
+                    var rotateTransform = LoadingIndicator.RenderTransform as RotateTransform;
+                    if (rotateTransform == null)
+                    {
+                        rotateTransform = new RotateTransform(0);
+                        LoadingIndicator.RenderTransform = rotateTransform;
+                    }
+                    Storyboard.SetTarget(loadingAnimation, LoadingIndicator);
+                    loadingAnimation.Begin();
+                    _logger.Info("Loading animation started");
                 }
-                Storyboard.SetTarget(loadingAnimation, LoadingIndicator);
-                loadingAnimation.Begin();
+                else
+                {
+                    _logger.Warn("LoadingAnimation resource not found or LoadingIndicator is null");
+                }
+
+                // Убеждаемся, что окно видимо и активно
+                this.ShowActivated = true;
+                this.Visibility = Visibility.Visible;
+                _logger.Info("MainWindow initialized successfully");
             }
-
-            // Убеждаемся, что окно видимо и активно
-            this.ShowActivated = true;
-            this.Visibility = Visibility.Visible;
-
-            _logger.Info("MainWindow initialized");
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error during MainWindow initialization");
+                throw;
+            }
         }
 
         /// <summary>

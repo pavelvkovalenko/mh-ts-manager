@@ -105,8 +105,10 @@ public partial class App : Application
                 _logger);
 
             // Создаём и показываем главное окно
+            _logger.Info("Creating MainWindow...");
             var mainWindow = new MainWindow(mainViewModel, _logger);
             
+            _logger.Info("MainWindow created. Setting properties...");
             // Принудительно делаем окно видимым и активным (защита от невидимости)
             mainWindow.ShowActivated = true;
             mainWindow.Topmost = false;
@@ -118,23 +120,36 @@ public partial class App : Application
             if (mainWindow.Height < mainWindow.MinHeight)
                 mainWindow.Height = mainWindow.MinHeight;
             
+            _logger.Info("Calling mainWindow.Show()...");
             mainWindow.Visibility = Visibility.Visible;
             mainWindow.Show();
+            
+            _logger.Info("Calling mainWindow.Activate() and Focus()...");
             mainWindow.Activate();
             mainWindow.Focus();
             
             // Дополнительная проверка: если окно всё ещё не видно, перемещаем его в центр
             var helper = new System.Windows.Interop.WindowInteropHelper(mainWindow);
-            _logger.Info("MainWindow created and shown. Handle: {0}, Visible: {1}, Width: {2}, Height: {3}", 
-                helper.Handle, mainWindow.IsVisible, mainWindow.Width, mainWindow.Height);
-
+            _logger.Info("MainWindow shown. Handle: {0}, Visible: {1}, Width: {2}, Height: {3}, IsVisible: {4}", 
+                helper.Handle, mainWindow.IsVisible, mainWindow.Width, mainWindow.Height, mainWindow.IsVisible);
+            
             // Блокировка завершения приложения до закрытия окна
             ShutdownMode = ShutdownMode.OnMainWindowClose;
 
-            // Запускаем автообновление
+            // Запускаем автообновление ПОСЛЕ того как окно показано
+            _logger.Info("Subscribing to Loaded event for refresh loop...");
             mainWindow.Loaded += async (_, _) =>
             {
-                await mainViewModel.StartRefreshLoopAsync();
+                _logger.Info("MainWindow.Loaded event fired. Starting refresh loop...");
+                try
+                {
+                    await mainViewModel.StartRefreshLoopAsync();
+                    _logger.Info("Refresh loop started successfully");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error(ex, "Failed to start refresh loop");
+                }
             };
 
             // Остановка при закрытии
