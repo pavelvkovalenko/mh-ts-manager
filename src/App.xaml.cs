@@ -1,5 +1,6 @@
 using System.Windows;
 using System.IO;
+using System.Runtime.InteropServices;
 using MhTsManager.Services;
 using MhTsManager.ViewModels;
 using MhTsManager.Views;
@@ -12,6 +13,10 @@ namespace MhTsManager
 /// </summary>
 public partial class App : Application
 {
+    // P/Invoke для создания консольного окна в режиме отладки
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern bool AllocConsole();
+    
     private readonly Logger _logger = new(Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "mh-ts-manager",
@@ -26,6 +31,14 @@ public partial class App : Application
 
         // Инициализация логгера
         var debugMode = e.Args.Contains("--debug");
+        
+        // Создаём консольное окно в режиме отладки
+        if (debugMode)
+        {
+            AllocConsole();
+            _logger.Info("Debug console attached");
+        }
+        
         Logger.Initialize(debugMode: debugMode);
         _logger.Info("Application starting. Version: {0}", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version);
 
@@ -82,7 +95,14 @@ public partial class App : Application
 
         // Создаём и показываем главное окно
         var mainWindow = new MainWindow(mainViewModel, _logger);
+        
+        // Принудительно делаем окно видимым (защита от невидимости)
+        mainWindow.Visibility = Visibility.Visible;
         mainWindow.Show();
+        mainWindow.Activate();
+        mainWindow.Focus();
+        
+        _logger.Info("MainWindow created and shown. Handle: {0}", new System.Windows.Interop.WindowInteropHelper(mainWindow).Handle);
 
         // Запускаем автообновление
         mainWindow.Loaded += async (_, _) =>
