@@ -25,7 +25,7 @@ public partial class App : Application
     /// <summary>
     /// Обработка аргументов командной строки.
     /// </summary>
-    protected override void OnStartup(StartupEventArgs e)
+    protected override async void OnStartup(StartupEventArgs e)
     {
         // 0. Консольный вывод ДО всего
         var debugMode = e.Args.Contains("--debug");
@@ -106,23 +106,44 @@ public partial class App : Application
             var commandExecutor = new CommandExecutor(_logger);
             _logger.Info("CommandExecutor created");
 
-            // Загрузка настроек (без прерывания, если файл отсутствует)
+            // Загрузка настроек (КРИТИЧЕСКАЯ ТОЧКА)
             _logger.Info("[STEP] Loading settings...");
             Console.WriteLine("[STEP] Loading settings...");
-            var settings = settingsService.LoadAsync().GetAwaiter().GetResult();
-            if (settings == null)
+            
+            AppSettings settings = null;
+            try
             {
-                _logger.Info("[STEP] Settings file not found, creating defaults...");
-                Console.WriteLine("[STEP] Settings file not found, creating defaults...");
-                settings = new AppSettings();
-                SettingsService.CreateDefaultSettings();
-                _logger.Info("[STEP] Default settings created");
-                Console.WriteLine("[STEP] Default settings created");
+                Console.WriteLine("[DEBUG] Before LoadAsync call");
+                _logger.Debug("Calling settingsService.LoadAsync()...");
+                
+                // ИСПОЛЬЗУЕМ await вместо GetAwaiter().GetResult() для предотвращения deadlock
+                settings = await settingsService.LoadAsync();
+                
+                Console.WriteLine($"[DEBUG] After LoadAsync completed, result is null: {settings == null}");
+                _logger.Debug($"LoadAsync completed. Result is null: {settings == null}");
+                
+                if (settings != null)
+                {
+                    _logger.Info("[STEP] Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
+                    Console.WriteLine("[STEP] Settings loaded successfully");
+                    Console.WriteLine($"[DEBUG] Settings FilePath: {settingsService.SettingsFilePath}");
+                    Console.WriteLine($"[DEBUG] Settings Language: {settings.Language}");
+                    Console.WriteLine($"[DEBUG] Settings Theme: {settings.Theme}");
+                    Console.WriteLine($"[DEBUG] TrackedProcesses count: {settings.TrackedProcesses?.Count ?? 0}");
+                    Console.WriteLine($"[DEBUG] Commands count: {settings.Commands?.Count ?? 0}");
+                }
+                else
+                {
+                    _logger.Warn("[STEP] Settings loaded as NULL");
+                    Console.WriteLine("[STEP] WARNING: Settings loaded as NULL!");
+                }
             }
-            else
+            catch (Exception loadEx)
             {
-                _logger.Info("[STEP] Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
-                Console.WriteLine("[STEP] Settings loaded successfully");
+                Console.WriteLine($"[ERROR] Exception during LoadAsync: {loadEx.Message}");
+                Console.WriteLine($"[ERROR] StackTrace: {loadEx.StackTrace}");
+                _logger.Error(loadEx, "[STEP] Failed to load settings");
+                settings = null;
             }
 
             // Проверка после загрузки настроек
