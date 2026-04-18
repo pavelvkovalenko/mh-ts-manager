@@ -77,11 +77,11 @@ public partial class App : Application
             if (settings == null)
             {
                 _logger.Info("Settings file not found or invalid, using defaults.");
-                settings = new MhTsManager.Models.Settings();
+                settings = new AppSettings();
             }
             else
             {
-                _logger.Info("Settings loaded successfully from: {0}", settingsService.SettingsPath);
+                _logger.Info("Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
             }
 
             // Загружаем Fluent стили ДО создания окна
