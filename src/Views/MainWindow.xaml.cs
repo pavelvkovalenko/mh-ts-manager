@@ -50,8 +50,8 @@ namespace MhTsManager.Views
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        var viewModel = _viewModel;
-                        LoadingIndicator.Visibility = viewModel.IsLoading ? Visibility.Visible : Visibility.Collapsed;
+                        // _viewModel инициализируется в конструкторе и никогда не бывает null
+                        LoadingIndicator.Visibility = _viewModel!.IsLoading ? Visibility.Visible : Visibility.Collapsed;
                     });
                 }
             };
