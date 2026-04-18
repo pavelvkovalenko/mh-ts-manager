@@ -35,7 +35,7 @@ public sealed class Logger : IDisposable
     private long _currentFileSize;
 
     /// <summary>
-    ///Singleton-экземпляр логгера.
+    /// Singleton-экземпляр логгера.
     /// </summary>
     public static Logger Instance
     {
@@ -43,10 +43,13 @@ public sealed class Logger : IDisposable
         {
             if (_instance == null)
             {
-                Initialize(Path.Combine(
+                var logPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                     "mh-ts-manager",
-                    "logs"));
+                    "logs");
+                _logger.DebugStatic("[Logger.Instance] Creating instance, path: {0}", logPath);
+                Initialize(logPath);
+                _logger.DebugStatic("[Logger.Instance] Instance created successfully");
             }
             return _instance!;
         }
@@ -69,7 +72,11 @@ public sealed class Logger : IDisposable
     /// <param name="debugMode">Включить отладочное логирование.</param>
     public static void Initialize(string? logDirectory = null, bool debugMode = false)
     {
-        if (_instance != null) return;
+        if (_instance != null) 
+        {
+            Console.WriteLine("[Logger.Initialize] Already initialized, skipping");
+            return;
+        }
 
         var dir = logDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
@@ -77,8 +84,10 @@ public sealed class Logger : IDisposable
             "logs");
 
         _isDebug = debugMode;
+        Console.WriteLine($"[Logger.Initialize] Creating instance, directory: {dir}, debug: {debugMode}");
         _instance = new Logger(dir);
         _instance.Info("Logger initialized. Directory: {0}, Debug: {1}", dir, debugMode);
+        Console.WriteLine("[Logger.Initialize] Initialization complete");
     }
 
     /// <summary>
@@ -168,18 +177,38 @@ public sealed class Logger : IDisposable
 
                 // Запись в файл
                 var logFile = GetOrCreateLogFile();
-                if (logFile == null) return;
+                if (logFile == null) 
+                {
+                    if (_isDebug)
+                        Console.WriteLine("[Logger.Write] Failed to get log file, skipping write");
+                    return;
+                }
 
                 // Проверка размера — ротация
                 if (_currentFileSize > MaxFileSize)
                 {
+                    if (_isDebug)
+                        Console.WriteLine("[Logger.Write] File size exceeded, rotating logs...");
                     RotateLogs();
                     logFile = GetOrCreateLogFile();
-                    if (logFile == null) return;
+                    if (logFile == null) 
+                    {
+                        if (_isDebug)
+                            Console.WriteLine("[Logger.Write] Failed to get new log file after rotation, skipping write");
+                        return;
+                    }
                 }
 
                 // UTF-8 без BOM
                 File.AppendAllText(logFile, logLine + Environment.NewLine, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+                
+                // Обновляем размер файла
+                _currentFileSize += Encoding.UTF8.GetByteCount(logLine + Environment.NewLine);
+                
+                if (_isDebug && level == LogLevel.Debug)
+                {
+                    Console.WriteLine($"[Logger.Write] Debug message written to {logFile}");
+                }
             }
             catch (Exception ex)
             {
@@ -187,6 +216,7 @@ public sealed class Logger : IDisposable
                 if (_isDebug)
                 {
                     Console.WriteLine($"[LOGGER ERROR] {ex.Message}");
+                    Console.WriteLine($"[LOGGER ERROR] Stack: {ex.StackTrace}");
                 }
             }
         }
