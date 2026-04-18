@@ -38,7 +38,7 @@ namespace MhTsManager.Views
                 _logger.Info("  - Window Handle (after InitializeComponent): {0}", 
                     new System.Windows.Interop.WindowInteropHelper(this).Handle);
 
-                _viewModel = viewModel;
+                _viewModel = viewModel!;
                 _logger.Info("Step 2: Setting DataContext to MainViewModel...");
                 DataContext = _viewModel;
                 _logger.Info("Step 2 COMPLETE: DataContext set successfully. DataContext type: {0}", DataContext?.GetType().Name ?? "null");
