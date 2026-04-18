@@ -14,14 +14,14 @@ namespace MhTsManager.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly MainViewModel _viewModel;
-        private readonly Logger _logger;
+        private readonly MainViewModel _viewModel = null!;
+        private readonly Logger _logger = null!;
 
         public MainWindow(MainViewModel viewModel, Logger logger)
         {
             InitializeComponent();
-            _viewModel = viewModel!;
-            _logger = logger!;
+            _viewModel = viewModel;
+            _logger = logger;
             DataContext = _viewModel;
 
             // Привязка Title к ViewModel
