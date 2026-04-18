@@ -115,7 +115,7 @@ public partial class App : Application
                 _logger.Info("[STEP] Settings file not found, creating defaults...");
                 Console.WriteLine("[STEP] Settings file not found, creating defaults...");
                 settings = new AppSettings();
-                settingsService.CreateDefaultSettings();
+                SettingsService.CreateDefaultSettings();
                 _logger.Info("[STEP] Default settings created");
                 Console.WriteLine("[STEP] Default settings created");
             }
