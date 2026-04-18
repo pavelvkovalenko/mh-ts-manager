@@ -23,64 +23,121 @@ namespace MhTsManager.Views
         {
             _logger = logger;
             _logger.Info("=== MAINWINDOW CONSTRUCTOR BEGIN ===");
-            
+            _logger.Info("Constructor called with ViewModel: {0}, Logger: {1}", 
+                viewModel?.GetType().Name ?? "null", 
+                logger?.GetType().Name ?? "null");
+
             try
             {
-                _logger.Info("Calling InitializeComponent()...");
-                InitializeComponent();
-                _logger.Info("InitializeComponent completed successfully");
+                _logger.Info("Step 1: Calling InitializeComponent()...");
+                _logger.Info("  - Current thread: {0}", System.Threading.Thread.CurrentThread.ManagedThreadId);
+                _logger.Info("  - Thread is STA: {0}", System.Threading.Thread.CurrentThread.GetApartmentState() == System.Threading.ApartmentState.STA);
                 
+                InitializeComponent();
+                _logger.Info("Step 1 COMPLETE: InitializeComponent() completed successfully");
+                _logger.Info("  - Window Handle (after InitializeComponent): {0}", 
+                    new System.Windows.Interop.WindowInteropHelper(this).Handle);
+
                 _viewModel = viewModel;
-                _logger.Info("Setting DataContext to MainViewModel...");
+                _logger.Info("Step 2: Setting DataContext to MainViewModel...");
                 DataContext = _viewModel;
-                _logger.Info("DataContext set successfully");
+                _logger.Info("Step 2 COMPLETE: DataContext set successfully. DataContext type: {0}", DataContext?.GetType().Name ?? "null");
 
                 // Привязка Title к ViewModel
-                _logger.Info("Setting up Title binding...");
+                _logger.Info("Step 3: Setting up Title binding...");
                 SetBinding(TitleProperty, new Binding("WindowTitle"));
-                _logger.Info("Title binding established. Current Title: {0}", Title);
+                _logger.Info("Step 3 COMPLETE: Title binding established. Current Title: {0}", Title);
+
+                // Проверка ресурсов после InitializeComponent
+                _logger.Info("Step 4: Checking resources...");
+                _logger.Info("  - Resources count: {0}", Resources.Count);
+                _logger.Info("  - MergedDictionaries count: {0}", 
+                    Application.Current?.Resources.MergedDictionaries.Count ?? -1);
+                
+                foreach (var key in Resources.Keys)
+                {
+                    _logger.Info("  - Resource key: {0}, Type: {1}", 
+                        key?.ToString() ?? "(null)", 
+                        Resources[key]?.GetType().Name ?? "(null)");
+                }
 
                 // Запуск анимации загрузки
-                _logger.Info("Looking for LoadingAnimation resource...");
+                _logger.Info("Step 5: Looking for LoadingAnimation resource...");
                 var loadingAnimation = TryFindResource("LoadingAnimation") as Storyboard;
+                _logger.Info("  - LoadingAnimation found: {0}", loadingAnimation != null ? "YES" : "NO");
+                _logger.Info("  - LoadingIndicator control: {0}", LoadingIndicator != null ? "FOUND" : "NULL");
+                
                 if (loadingAnimation != null && LoadingIndicator != null)
                 {
-                    _logger.Info("LoadingAnimation found, setting up rotation...");
+                    _logger.Info("Step 5a: Setting up rotation animation...");
                     var rotateTransform = LoadingIndicator.RenderTransform as RotateTransform;
                     if (rotateTransform == null)
                     {
-                        _logger.Info("Creating new RotateTransform...");
+                        _logger.Info("  - Creating new RotateTransform...");
                         rotateTransform = new RotateTransform(0);
                         LoadingIndicator.RenderTransform = rotateTransform;
                     }
                     Storyboard.SetTarget(loadingAnimation, LoadingIndicator);
-                    _logger.Info("Starting animation...");
+                    _logger.Info("  - Starting animation...");
                     loadingAnimation.Begin();
-                    _logger.Info("Loading animation started successfully");
+                    _logger.Info("Step 5a COMPLETE: Loading animation started successfully");
                 }
                 else
                 {
-                    _logger.Warning("LoadingAnimation resource not found or LoadingIndicator is null. Animation: {0}, Indicator: {1}", 
-                        loadingAnimation == null ? "null" : "found", 
+                    _logger.Warning("Step 5 SKIPPED: LoadingAnimation resource not found or LoadingIndicator is null. Animation: {0}, Indicator: {1}",
+                        loadingAnimation == null ? "null" : "found",
                         LoadingIndicator == null ? "null" : "found");
                 }
 
                 // Убеждаемся, что окно видимо и активно
-                _logger.Info("Setting ShowActivated = true and Visibility = Visible");
+                _logger.Info("Step 6: Setting ShowActivated = true and Visibility = Visible");
                 this.ShowActivated = true;
                 this.Visibility = Visibility.Visible;
-                _logger.Info("MainWindow initialized successfully. IsVisible: {0}, IsActive: {1}", IsVisible, IsActive);
+                
+                _logger.Info("Step 6 COMPLETE: Properties set");
+                _logger.Info("  - ShowActivated: {0}", this.ShowActivated);
+                _logger.Info("  - Visibility: {0}", this.Visibility);
+                _logger.Info("  - IsVisible: {0}", this.IsVisible);
+                _logger.Info("  - IsActive: {0}", this.IsActive);
+                _logger.Info("  - Width: {0}, Height: {1}", this.Width, this.Height);
+                _logger.Info("  - MinWidth: {0}, MinHeight: {1}", this.MinWidth, this.MinHeight);
+                _logger.Info("  - WindowStyle: {0}", this.WindowStyle);
+                _logger.Info("  - AllowsTransparency: {0}", this.AllowsTransparency);
+                _logger.Info("  - Background: {0}", this.Background?.ToString() ?? "null");
+                
+                var helper = new System.Windows.Interop.WindowInteropHelper(this);
+                _logger.Info("  - Window Handle: {0}", helper.Handle);
+                
                 _logger.Info("=== MAINWINDOW CONSTRUCTOR COMPLETE ===");
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "Error during MainWindow initialization");
+                _logger.Error(ex, "❌ ERROR during MainWindow initialization");
                 _logger.Error("Exception type: {0}", ex.GetType().FullName);
+                _logger.Error("Message: {0}", ex.Message);
                 _logger.Error("Stack trace: {0}", ex.StackTrace);
                 if (ex.InnerException != null)
                 {
                     _logger.Error("Inner exception: {0}", ex.InnerException);
+                    _logger.Error("Inner exception stack trace: {0}", ex.InnerException.StackTrace);
                 }
+                
+                // Логируем все детали ресурсов для диагностики
+                try
+                {
+                    _logger.Info("Diagnostic info at failure point:");
+                    _logger.Info("  - Application.Current: {0}", Application.Current != null ? "YES" : "NO");
+                    if (Application.Current != null)
+                    {
+                        _logger.Info("  - Application.Resources count: {0}", Application.Current.Resources.Count);
+                        _logger.Info("  - Application.MergedDictionaries count: {0}", Application.Current.Resources.MergedDictionaries.Count);
+                    }
+                }
+                catch (Exception diagEx)
+                {
+                    _logger.Error(diagEx, "Failed to collect diagnostic info");
+                }
+                
                 throw;
             }
         }
@@ -90,6 +147,7 @@ namespace MhTsManager.Views
         /// </summary>
         private void ExpandAll_Click(object sender, RoutedEventArgs e)
         {
+            _logger.Info("ExpandAll_Click triggered");
             foreach (var vm in _viewModel.Sessions)
                 vm.IsExpanded = true;
         }
@@ -99,6 +157,7 @@ namespace MhTsManager.Views
         /// </summary>
         private void CollapseAll_Click(object sender, RoutedEventArgs e)
         {
+            _logger.Info("CollapseAll_Click triggered");
             foreach (var vm in _viewModel.Sessions)
                 vm.IsExpanded = false;
         }
@@ -108,6 +167,7 @@ namespace MhTsManager.Views
         /// </summary>
         private void ExpandSession_Click(object sender, RoutedEventArgs e)
         {
+            _logger.Info("ExpandSession_Click triggered");
             if (_viewModel.SelectedSession != null)
                 _viewModel.SelectedSession.IsExpanded = true;
         }
@@ -117,8 +177,34 @@ namespace MhTsManager.Views
         /// </summary>
         private void CollapseSession_Click(object sender, RoutedEventArgs e)
         {
+            _logger.Info("CollapseSession_Click triggered");
             if (_viewModel.SelectedSession != null)
                 _viewModel.SelectedSession.IsExpanded = false;
+        }
+        
+        /// <summary>
+        /// Обработчик события Loaded для дополнительной диагностики
+        /// </summary>
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            _logger.Info("=== WINDOW LOADED EVENT ===");
+            _logger.Info("  - IsVisible: {0}", this.IsVisible);
+            _logger.Info("  - IsActive: {0}", this.IsActive);
+            _logger.Info("  - ActualWidth: {0}, ActualHeight: {1}", this.ActualWidth, this.ActualHeight);
+            _logger.Info("  - RenderSize: {0}x{1}", this.RenderSize.Width, this.RenderSize.Height);
+            
+            var helper = new System.Windows.Interop.WindowInteropHelper(this);
+            _logger.Info("  - Handle: {0}", helper.Handle);
+            
+            // Проверяем, есть ли дочерние элементы
+            if (this.Content is Grid grid)
+            {
+                _logger.Info("  - Content is Grid with {0} children", grid.Children.Count);
+            }
+            else
+            {
+                _logger.Info("  - Content type: {0}", this.Content?.GetType().Name ?? "null");
+            }
         }
     }
 }
