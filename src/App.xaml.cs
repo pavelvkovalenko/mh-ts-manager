@@ -127,14 +127,14 @@ public partial class App : Application
                     _logger.Info("[STEP] Settings loaded successfully from: {0}", settingsService.SettingsFilePath);
                     Console.WriteLine("[STEP] Settings loaded successfully");
                     Console.WriteLine($"[DEBUG] Settings FilePath: {settingsService.SettingsFilePath}");
-                    Console.WriteLine($"[DEBUG] Settings Language: {settings.Language}");
-                    Console.WriteLine($"[DEBUG] Settings Theme: {settings.Theme}");
-                    Console.WriteLine($"[DEBUG] TrackedProcesses count: {settings.TrackedProcesses?.Count ?? 0}");
-                    Console.WriteLine($"[DEBUG] Commands count: {settings.Commands?.Count ?? 0}");
+                    Console.WriteLine($"[DEBUG] Settings Language: {settings.General.Language}");
+                    Console.WriteLine($"[DEBUG] Settings Theme: {settings.General.Theme}");
+                    Console.WriteLine($"[DEBUG] AutoRefreshInterval: {settings.General.AutoRefreshInterval}");
+                    Console.WriteLine($"[DEBUG] ExpandAppsByDefault: {settings.General.ExpandAppsByDefault}");
                 }
                 else
                 {
-                    _logger.Warn("[STEP] Settings loaded as NULL");
+                    _logger.Warning("[STEP] Settings loaded as NULL");
                     Console.WriteLine("[STEP] WARNING: Settings loaded as NULL!");
                 }
             }
