@@ -199,7 +199,9 @@ public partial class App : Application
                     Console.WriteLine("[CONSOLE] Window NOT visible! Attempting recovery...");
                     mainWindow.Visibility = Visibility.Visible;
                     mainWindow.Show();
+                    Console.WriteLine("[CONSOLE] Calling Activate()...");
                     mainWindow.Activate();
+                    Console.WriteLine("[CONSOLE] Activate() completed");
                     mainWindow.Focus();
                     _logger.Info("Recovery attempted. IsVisible: {0}", mainWindow.IsVisible);
                 }
