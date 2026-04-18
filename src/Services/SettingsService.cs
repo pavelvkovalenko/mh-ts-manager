@@ -220,7 +220,10 @@ public sealed class SettingsService : ISettingsService
     /// </summary>
     private static AppSettings CreateDefaultSettings()
     {
-        return new AppSettings
+        // Добавлено подробное логирование для диагностики отсутствия окна
+        Logger.DebugStatic("[SettingsService] CreateDefaultSettings: Creating default settings...");
+        
+        var defaultSettings = new AppSettings
         {
             General = new GeneralSettings
             {
@@ -243,6 +246,10 @@ public sealed class SettingsService : ISettingsService
                 ConfirmDangerousActions = true,
             }
         };
+        
+        Logger.DebugStatic($"[SettingsService] CreateDefaultSettings: Default settings created. JSON: {System.Text.Json.JsonSerializer.Serialize(defaultSettings)}");
+        
+        return defaultSettings;
     }
 }
 }
