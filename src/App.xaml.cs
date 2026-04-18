@@ -110,7 +110,7 @@ public partial class App : Application
             _logger.Info("[STEP] Loading settings...");
             Console.WriteLine("[STEP] Loading settings...");
             
-            AppSettings settings = null;
+            AppSettings settings = null!;
             try
             {
                 Console.WriteLine("[DEBUG] Before LoadAsync call");
@@ -143,7 +143,7 @@ public partial class App : Application
                 Console.WriteLine($"[ERROR] Exception during LoadAsync: {loadEx.Message}");
                 Console.WriteLine($"[ERROR] StackTrace: {loadEx.StackTrace}");
                 _logger.Error(loadEx, "[STEP] Failed to load settings");
-                settings = null;
+                settings = null!;
             }
 
             // Проверка после загрузки настроек
