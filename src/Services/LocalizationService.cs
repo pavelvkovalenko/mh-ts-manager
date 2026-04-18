@@ -32,19 +32,37 @@ public sealed class LocalizationService : ILocalizationService
     public LocalizationService(Logger logger, string language = "system")
     {
         _logger = logger;
+        _logger.Debug("[LocalizationService] Constructor started");
+        Console.WriteLine("[CONSOLE] [LocalizationService] Constructor started");
 
         // Определяем текущий язык
+        _logger.Debug("[LocalizationService] Determining current language");
         _currentLanguage = language == "system"
             ? System.Globalization.CultureInfo.CurrentUICulture.Name
             : language;
+        _logger.Debug("[LocalizationService] Language parameter: {0}", language);
+        _logger.Debug("[LocalizationService] CurrentUICulture.Name: {0}", System.Globalization.CultureInfo.CurrentUICulture.Name);
+        _logger.Debug("[LocalizationService] Resolved current language: {0}", _currentLanguage);
+        Console.WriteLine($"[CONSOLE] [LocalizationService] Language parameter: {language}");
+        Console.WriteLine($"[CONSOLE] [LocalizationService] CurrentUICulture.Name: {System.Globalization.CultureInfo.CurrentUICulture.Name}");
+        Console.WriteLine($"[CONSOLE] [LocalizationService] Resolved current language: {_currentLanguage}");
 
         if (string.IsNullOrEmpty(_currentLanguage))
+        {
+            _logger.Debug("[LocalizationService] Current language is null or empty, defaulting to en-US");
             _currentLanguage = "en-US";
+            Console.WriteLine("[CONSOLE] [LocalizationService] Defaulted to en-US");
+        }
 
         // Загружаем встроенные ресурсы
+        _logger.Debug("[LocalizationService] Loading built-in resources");
+        Console.WriteLine("[CONSOLE] [LocalizationService] Loading built-in resources");
         LoadBuiltInResources();
+        _logger.Debug("[LocalizationService] Built-in resources loaded");
+        Console.WriteLine("[CONSOLE] [LocalizationService] Built-in resources loaded");
 
         _logger.Info("LocalizationService initialized. Language: {0}", _currentLanguage);
+        Console.WriteLine($"[CONSOLE] [LocalizationService] Initialization complete. Language: {_currentLanguage}");
     }
 
     /// <summary>
@@ -52,31 +70,51 @@ public sealed class LocalizationService : ILocalizationService
     /// </summary>
     public string GetString(string key, params object[] args)
     {
+        _logger.Debug("[LocalizationService.GetString] Requested key: {0}, args count: {1}", key, args.Length);
+        Console.WriteLine($"[CONSOLE] [LocalizationService.GetString] Requested key: {key}, args count: {args.Length}");
+
         // 1. Текущий язык
+        _logger.Debug("[LocalizationService.GetString] Checking current language: {0}", _currentLanguage);
         if (_resources.TryGetValue(_currentLanguage, out var currentLang) &&
             currentLang.TryGetValue(key, out var value))
         {
-            return args.Length > 0 ? string.Format(value, args) : value;
+            var result = args.Length > 0 ? string.Format(value, args) : value;
+            _logger.Debug("[LocalizationService.GetString] Found in current language: {0}", result);
+            Console.WriteLine($"[CONSOLE] [LocalizationService.GetString] Found in current language: {result}");
+            return result;
         }
+        _logger.Debug("[LocalizationService.GetString] Not found in current language");
+        Console.WriteLine("[CONSOLE] [LocalizationService.GetString] Not found in current language");
 
         // 2. Fallback: ru-RU
         if (_currentLanguage != "ru-RU" &&
             _resources.TryGetValue("ru-RU", out var ruLang) &&
             ruLang.TryGetValue(key, out var ruValue))
         {
-            return args.Length > 0 ? string.Format(ruValue, args) : ruValue;
+            var result = args.Length > 0 ? string.Format(ruValue, args) : ruValue;
+            _logger.Debug("[LocalizationService.GetString] Found in ru-RU fallback: {0}", result);
+            Console.WriteLine($"[CONSOLE] [LocalizationService.GetString] Found in ru-RU fallback: {result}");
+            return result;
         }
+        _logger.Debug("[LocalizationService.GetString] Not found in ru-RU fallback");
+        Console.WriteLine("[CONSOLE] [LocalizationService.GetString] Not found in ru-RU fallback");
 
         // 3. Fallback: en-US
         if (_currentLanguage != "en-US" &&
             _resources.TryGetValue("en-US", out var enLang) &&
             enLang.TryGetValue(key, out var enValue))
         {
-            return args.Length > 0 ? string.Format(enValue, args) : enValue;
+            var result = args.Length > 0 ? string.Format(enValue, args) : enValue;
+            _logger.Debug("[LocalizationService.GetString] Found in en-US fallback: {0}", result);
+            Console.WriteLine($"[CONSOLE] [LocalizationService.GetString] Found in en-US fallback: {result}");
+            return result;
         }
+        _logger.Debug("[LocalizationService.GetString] Not found in en-US fallback");
+        Console.WriteLine("[CONSOLE] [LocalizationService.GetString] Not found in en-US fallback");
 
         // 4. Возвращаем ключ как заглушку
-        _logger.Debug("Missing localization key: {0} (language: {1})", key, _currentLanguage);
+        _logger.Debug("[LocalizationService.GetString] Missing localization key: {0} (language: {1})", key, _currentLanguage);
+        Console.WriteLine($"[CONSOLE] [LocalizationService.GetString] Missing localization key: {key} (language: {_currentLanguage})");
         return args.Length > 0 ? string.Format(key, args) : key;
     }
 
@@ -85,7 +123,12 @@ public sealed class LocalizationService : ILocalizationService
     /// </summary>
     private void LoadBuiltInResources()
     {
+        _logger.Debug("[LocalizationService.LoadBuiltInResources] START");
+        Console.WriteLine("[CONSOLE] [LocalizationService.LoadBuiltInResources] START");
+
         // Русский язык
+        _logger.Debug("[LocalizationService.LoadBuiltInResources] Loading ru-RU resources");
+        Console.WriteLine("[CONSOLE] [LocalizationService.LoadBuiltInResources] Loading ru-RU resources");
         _resources["ru-RU"] = new Dictionary<string, string>
         {
             ["App.WindowTitle"] = "Диспетчер пользовательских сессий",
@@ -128,8 +171,12 @@ public sealed class LocalizationService : ILocalizationService
             ["ContextMenu.Logoff"] = "Выйти",
             ["ContextMenu.SendMessage"] = "Отправить сообщение...",
         };
+        _logger.Debug("[LocalizationService.LoadBuiltInResources] ru-RU resources loaded: {0} keys", _resources["ru-RU"].Count);
+        Console.WriteLine($"[CONSOLE] [LocalizationService.LoadBuiltInResources] ru-RU resources loaded: {_resources["ru-RU"].Count} keys");
 
         // English
+        _logger.Debug("[LocalizationService.LoadBuiltInResources] Loading en-US resources");
+        Console.WriteLine("[CONSOLE] [LocalizationService.LoadBuiltInResources] Loading en-US resources");
         _resources["en-US"] = new Dictionary<string, string>
         {
             ["App.WindowTitle"] = "User Session Manager",
@@ -172,6 +219,11 @@ public sealed class LocalizationService : ILocalizationService
             ["ContextMenu.Logoff"] = "Log Off",
             ["ContextMenu.SendMessage"] = "Send Message...",
         };
+        _logger.Debug("[LocalizationService.LoadBuiltInResources] en-US resources loaded: {0} keys", _resources["en-US"].Count);
+        Console.WriteLine($"[CONSOLE] [LocalizationService.LoadBuiltInResources] en-US resources loaded: {_resources["en-US"].Count} keys");
+
+        _logger.Debug("[LocalizationService.LoadBuiltInResources] END");
+        Console.WriteLine("[CONSOLE] [LocalizationService.LoadBuiltInResources] END");
     }
 }
 }
